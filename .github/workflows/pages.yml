@@ -1,0 +1,45 @@
+# GitHub Pages 배포.
+# 정적 파일만 올리므로 빌드 과정이 없다. 저장소를 그대로 서빙한다.
+name: Pages 배포
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 배포는 항상 최신 것만 살린다
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - name: 배포할 파일 모으기
+        run: |
+          mkdir -p _site
+          cp index.html app.js _site/
+          mkdir -p _site/data
+          cp data/mock-news.js _site/data/
+          # 수집 결과가 아직 없을 수도 있다. 그때는 목업으로 뜬다.
+          if [ -f data/news.js ]; then cp data/news.js _site/data/; fi
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

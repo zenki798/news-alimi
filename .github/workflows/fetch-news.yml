@@ -1,0 +1,60 @@
+# RSS 를 주기적으로 수집해 data/news.js 를 갱신한다.
+#
+# 왜 이 방식인가
+# - 브라우저에서 RSS 를 직접 받으면 CORS 에 막힌다. 수집은 서버 측에서 해야 한다.
+# - 상시 서버를 띄우면 비용이 든다. Actions 는 필요할 때 몇 초만 돌고 끝난다.
+# - public 저장소의 Actions 는 무료이고 분당 한도가 없다.
+# - 외부 라이브러리를 쓰지 않으므로 npm install 단계가 없다.
+name: 뉴스 수집
+
+on:
+  schedule:
+    # 30분마다. UTC 기준이지만 주기라서 시차와 무관하다.
+    - cron: '*/30 * * * *'
+  # 수동 실행도 열어둔다 (Actions 탭 → Run workflow)
+  workflow_dispatch:
+  # 수집기를 고쳤을 때 바로 확인할 수 있게 한다
+  push:
+    paths:
+      - 'scripts/fetch-news.js'
+      - '.github/workflows/fetch-news.yml'
+
+# 스케줄이 겹쳐 돌면 커밋이 충돌한다
+concurrency:
+  group: fetch-news
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: RSS 수집
+        run: node scripts/fetch-news.js
+
+      - name: 변경이 있을 때만 커밋
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # 내용이 같으면 커밋하지 않는다. 30분마다 빈 커밋이 쌓이는 것을 막는다.
+          if git diff --quiet -- data/news.js; then
+            echo "변경 없음 — 커밋하지 않습니다."
+            exit 0
+          fi
+
+          COUNT=$(grep -o '"id":' data/news.js | wc -l)
+          git add data/news.js
+          git commit -m "뉴스 갱신: ${COUNT}건 ($(date -u '+%Y-%m-%d %H:%M UTC'))"
+
+          # 스케줄이 겹쳐 원격이 앞서 있을 수 있으므로 rebase 후 푸시한다
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+          git push
