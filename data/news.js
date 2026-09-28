@@ -4,7 +4,7 @@
 (function (g) {
   var d = {
     "isMock": false,
-    "generatedAt": "2026-09-28T03:46:08.681Z",
+    "generatedAt": "2026-09-28T03:54:24.138Z",
     "categories": [
       {
         "key": "it",
@@ -46,11 +46,35 @@
       {
         "category": "domestic",
         "source": "연합뉴스",
+        "title": "민주노총, 교육교부금 개편 반대…\"지원해야 할 때 외려 강탈\"",
+        "summary": "지방교육재정교부금(교부금) 내국세 연동제 폐지를 앞두고 교육계가 거세게 반발하는 가운데 전국민주노동조합총연맹(...",
+        "url": "https://www.yna.co.kr/view/AKR20260928080900530",
+        "publishedAt": "2026-09-28T03:44:55.000Z",
+        "importance": 3,
+        "id": "domestic-AKR20260928080900530",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "sports",
+        "source": "연합뉴스",
+        "title": "[아시안게임] 천위페이도 꼼짝 못 했다…안세영, 사상 첫 2연패까지 단 1승",
+        "summary": "배드민턴 여자 단식 '절대 1강' 안세영(삼성생명)이 아시안게임 사상 첫 2연패 달성에 단 1승만...",
+        "url": "https://www.yna.co.kr/view/AKR20260928080800007",
+        "publishedAt": "2026-09-28T03:42:00.000Z",
+        "importance": 3,
+        "id": "sports-AKR20260928080800007",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "domestic",
+        "source": "연합뉴스",
         "title": "김상욱, 5·18 묘역 참배…\"전남광주와 내년 사업 성과 약속\"",
         "summary": "김상욱 울산시장은 28일 \"내년 이맘때 다시 광주를 찾을 때는 전남광주와 울산 사이에 실제 정책 사업과 경...",
         "url": "https://www.yna.co.kr/view/AKR20260928080600054",
         "publishedAt": "2026-09-28T03:40:01.000Z",
-        "importance": 3,
+        "importance": 2,
         "id": "domestic-AKR20260928080600054",
         "keywords": [],
         "points": []
@@ -122,7 +146,7 @@
         "summary": "지난 21일 서부전선 비무장지대(DMZ) 내 지뢰 추정 폭발사고 당시 현장에 있던 병력이 폭발하지 않은 지뢰 ...",
         "url": "https://www.yna.co.kr/view/AKR20260928046951504",
         "publishedAt": "2026-09-28T03:00:47.000Z",
-        "importance": 2,
+        "importance": 1,
         "id": "domestic-AKR20260928046951504",
         "keywords": [],
         "points": []
@@ -248,18 +272,6 @@
         "points": []
       },
       {
-        "category": "domestic",
-        "source": "연합뉴스",
-        "title": "인제대·한국공학대 등 4개 대학, 지역인재양성 신규기관 선정",
-        "summary": "한국산업인력공단은 지역성장엔진 산업과 연계한 일학습병행 후학습모델 신규 운영기관으로 인제대·한국공학대·인천대·...",
-        "url": "https://www.yna.co.kr/view/AKR20260928058100530",
-        "publishedAt": "2026-09-28T03:00:08.000Z",
-        "importance": 1,
-        "id": "domestic-AKR20260928058100530",
-        "keywords": [],
-        "points": []
-      },
-      {
         "category": "econ",
         "source": "한국경제",
         "title": "\"치매 부모님 어쩌나\"…100세까지 돌봄 걱정 덜어주는 보험",
@@ -338,7 +350,7 @@
         "summary": "배드민턴 남자 복식 '세계 최강' 서승재-김원호 조가 아시안게임 결승 문턱에서 아쉽게 발걸음을 돌...",
         "url": "https://www.yna.co.kr/view/AKR20260928079400007",
         "publishedAt": "2026-09-28T02:58:39.000Z",
-        "importance": 3,
+        "importance": 2,
         "id": "sports-AKR20260928079400007",
         "keywords": [],
         "points": []
@@ -638,7 +650,7 @@
         "summary": "2022 항저우 아시안게임 은메달리스트인 배드민턴 여자 복식 세계 2위 이소희-백하나(이상 인천국...",
         "url": "https://www.yna.co.kr/view/AKR20260928070900007",
         "publishedAt": "2026-09-28T02:18:24.000Z",
-        "importance": 2,
+        "importance": 1,
         "id": "sports-AKR20260928070900007",
         "keywords": [],
         "points": []
@@ -964,18 +976,6 @@
         "publishedAt": "2026-09-28T00:57:34.000Z",
         "importance": 1,
         "id": "sports-AKR20260928047900007",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "sports",
-        "source": "연합뉴스",
-        "title": "피겨 김유성, 네펠라 메모리얼 역전 우승…트리플 악셀 성공",
-        "summary": "피겨 스케이팅 여자 싱글 유망주 김유성(수리고)이 트리플 악셀(공중 3회전반)을 앞세워 국제빙상경기연맹(ISU...",
-        "url": "https://www.yna.co.kr/view/AKR20260928047500007",
-        "publishedAt": "2026-09-28T00:54:57.000Z",
-        "importance": 1,
-        "id": "sports-AKR20260928047500007",
         "keywords": [],
         "points": []
       },
