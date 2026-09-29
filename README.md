@@ -33,18 +33,51 @@
 SMTP 자격증명을 저장하지 않습니다. Actions가 다이제스트를 Issue로 올리면
 GitHub가 저장소를 지켜보는 사람에게 알림 메일을 보내주는 방식입니다.
 
-**켜기 — 클릭 두 번**
+### 현재 상태: 둘 다 꺼짐
 
-1. 저장소 **Actions** 탭 → 왼쪽 목록에서 **뉴스 다이제스트 메일** 선택
-   → 상단 안내의 **`Enable workflow`** 버튼
-2. 저장소 우측 상단 **Watch** 가 `Watching` 인지 확인 (아니면 눌러서 켜기)
+메일을 받으려면 **두 가지가 모두 켜져 있어야** 합니다. 지금은 둘 다 꺼져 있습니다.
 
-둘 다 돼 있어야 메일이 옵니다. Watch가 꺼져 있으면 Issue는 올라가지만 메일이 안 갑니다.
+| 스위치 | 현재 | 없으면 |
+|---|---|---|
+| ① 다이제스트 워크플로 | ⛔ 꺼짐 | 다이제스트가 아예 만들어지지 않음 |
+| ② 저장소 Watch | ⛔ 꺼짐 | 다이제스트는 올라가지만 **메일이 안 감** |
 
-**끄기**
+### 켜는 방법
 
-- Actions 탭 → **뉴스 다이제스트 메일** → 우측 `···` → **`Disable workflow`**
-- 또는 **Watch → Unwatch** (이러면 이 저장소의 다른 알림도 함께 꺼집니다)
+**① 워크플로 켜기**
+
+<https://github.com/zenki798/news-alimi/actions/workflows/digest.yml>
+
+위 주소로 들어가면 `This workflow was disabled manually` 안내와 함께
+**`Enable workflow`** 버튼이 보입니다. 그걸 누르면 됩니다.
+
+**② Watch 켜기**
+
+<https://github.com/zenki798/news-alimi>
+
+저장소 첫 화면 **우측 상단의 `Watch` 버튼** → **`All Activity`** 선택
+(`Participating and @mentions` 로는 안 옵니다. 다이제스트를 올리는 건 봇이고
+회원님이 참여한 대화가 아니기 때문입니다.)
+
+지켜보는 저장소 목록은 <https://github.com/watching> 에서 볼 수 있습니다.
+
+**바로 한 통 받아보기**
+
+①을 켠 뒤 같은 Actions 화면에서 **`Run workflow`** 버튼을 누르면 즉시 발송됩니다.
+
+### 끄는 방법
+
+- **①만 끄기** — Actions → 뉴스 다이제스트 메일 → 우측 `···` → `Disable workflow`
+  (가장 깔끔합니다. 저장소의 다른 알림은 그대로 받습니다.)
+- **②도 끄기** — 저장소 첫 화면 `Watching` 버튼 → `Unwatch`
+
+### 메일은 어디로 오나
+
+GitHub 계정의 **기본 이메일**로 옵니다. 커밋에 찍히는 주소
+(`zenki798@users.noreply.github.com`)와는 별개입니다.
+
+- 확인·변경: <https://github.com/settings/emails>
+- 이 저장소만 다른 주소로 받기: <https://github.com/settings/notifications> 의 `Custom routing`
 
 **바로 한 번 받아보기**
 
