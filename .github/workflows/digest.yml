@@ -1,0 +1,69 @@
+# 뉴스 다이제스트를 Issue 로 올린다. GitHub 가 그걸 알림 메일로 보내준다.
+#
+# 왜 이 방식인가
+# - 메일을 직접 보내려면 SMTP 자격증명을 저장해야 한다. 이 방식은 저장할 비밀이 없다.
+# - 저장소를 지켜보는 사람(소유자는 기본으로 지켜보는 상태)에게 GitHub 가 알림 메일을 보낸다.
+# - 메일을 안 받으려면 저장소 Watch 를 끄면 되고, 다시 받으려면 켜면 된다.
+name: 뉴스 다이제스트 메일
+
+on:
+  schedule:
+    # KST 는 UTC+9 다. 아침 7시 = 전날 22:00 UTC, 저녁 6시 = 09:00 UTC
+    - cron: '0 22 * * *'   # 매일 07:00 KST
+    - cron: '0 9 * * *'    # 매일 18:00 KST
+  workflow_dispatch:
+
+concurrency:
+  group: digest
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 커밋된 데이터가 최대 30분 묵었을 수 있다. 메일은 방금 것으로 보내야 하므로
+      # 여기서 새로 수집한다. 커밋은 하지 않는다(수집 워크플로가 따로 한다).
+      - name: 최신 뉴스 수집
+        run: node scripts/fetch-news.js
+
+      - name: 다이제스트 생성
+        run: node scripts/build-digest.js --out .
+
+      # 내용이 비었으면 빈 메일을 보내지 않는다
+      - name: 내용 확인
+        run: |
+          SIZE=$(wc -c < digest-body.md)
+          echo "본문 ${SIZE} 바이트"
+          if [ "$SIZE" -lt 300 ]; then
+            echo "다이제스트가 너무 짧습니다. 메일을 보내지 않고 실패로 남깁니다."
+            exit 1
+          fi
+          grep -q '뉴스알리미\|github.io' digest-body.md || { echo "링크가 빠졌습니다."; exit 1; }
+
+      - name: Issue 로 올리기 (= 알림 메일 발송)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TITLE=$(cat digest-title.txt)
+          echo "제목: $TITLE"
+
+          # 라벨이 없으면 만든다 (처음 실행 때)
+          gh label create digest --color 1D76DB --description "자동 생성 뉴스 다이제스트" 2>/dev/null || true
+
+          URL=$(gh issue create --title "$TITLE" --body-file digest-body.md --label digest)
+          echo "생성됨: $URL"
+
+          # 알림 메일은 생성 시점에 이미 나갔다. Issue 목록이 쌓이지 않게 바로 닫는다.
+          gh issue close "$URL" --comment "다이제스트 전달 완료 (자동)" >/dev/null 2>&1 || true
+
+          echo "DIGEST_URL=$URL" >> "$GITHUB_STEP_SUMMARY"
