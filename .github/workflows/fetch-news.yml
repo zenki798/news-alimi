@@ -1,40 +1,83 @@
-# RSS 를 주기적으로 수집해 data/news.js 를 갱신한다.
+# 뉴스를 모아 사이트에 올린다. 한 번 돌 때마다 약 15분 뒤의 다음 차례를 스스로 부른다.
 #
 # 왜 이 방식인가
-# - 브라우저에서 RSS 를 직접 받으면 CORS 에 막힌다. 수집은 서버 측에서 해야 한다.
-# - 상시 서버를 띄우면 비용이 든다. Actions 는 필요할 때 몇 초만 돌고 끝난다.
-# - public 저장소의 Actions 는 무료이고 분당 한도가 없다.
-# - 외부 라이브러리를 쓰지 않으므로 npm install 단계가 없다.
-name: 뉴스 수집
+# - 브라우저에서 RSS 를 직접 받으면 CORS 에 막힌다. 수집은 서버 측(Actions 러너)에서 한다.
+# - public 저장소의 Actions 는 무료다. 외부 라이브러리가 없어서 npm install 단계도 없다.
+#
+# 왜 예약(schedule)이 아니라 "다음 차례 부르기"인가 (AGENTS.md 4항)
+# - GitHub 는 예약 실행을 보장하지 않는다. '*/30' 은 이틀간 9번(4~8시간 간격)만 돌았고,
+#   혼잡을 피해 7·22·37·52분으로 옮긴 뒤에도 첫 1시간 동안 한 번도 돌지 않았다 (2026-09-30).
+# - 수동 실행(workflow_dispatch)은 바로 돈다. 그래서 끝날 때마다 다음 차례를 부르고, 다음 차례는
+#   저장소 설정의 환경 news-interval 에 둔 대기 타이머(wait timer, 14분)만큼 기다린 뒤 수집한다.
+#   기다리는 동안에는 러너를 쓰지 않는다.
+# - 예약은 사슬이 끊겼을 때 다시 잇는 예비용으로만 남긴다.
+#
+# 쌓이는 것을 줄인다
+# - git 은 지난 커밋을 지울 수 없다(이력을 고쳐 써야 한다). 그래서 애초에 적게 넣는다.
+#   사이트에는 방금 모은 뉴스를 배포 산출물로만 올리고, 저장소 사본(data/news.js)은 하루 한 번만 커밋한다.
+#   (15분마다 커밋하면 한 해 약 290MB, 하루 한 번이면 약 3MB)
+# - 15분마다 생기는 배포 산출물은 1일 뒤 자동 삭제되고, 실행 기록·배포 기록은 하루 한 번 7일 지난 것을 지운다.
+name: 뉴스 수집·배포
 
 on:
-  schedule:
-    # 15분 간격, 정시·5분 단위를 피한 7·22·37·52분.
-    # GitHub 는 예약 실행을 보장하지 않는다. 정시처럼 예약이 몰리는 시각에는 늦추거나 건너뛴다.
-    # '*/30'(매시 0·30분)으로 두었을 때 이틀간 9번, 4~8시간 간격으로만 돌았다 (2026-09-30 확인).
-    # 몇 번 건너뛰어도 30분 안에 한 번은 돌도록 간격을 촘촘히 둔다. 되돌리지 않는다 (tests/workflows.spec.js).
-    - cron: '7,22,37,52 * * * *'
-  # 수동 실행도 열어둔다 (Actions 탭 → Run workflow)
-  workflow_dispatch:
-  # 수집기를 고쳤을 때 바로 확인할 수 있게 한다
   push:
-    paths:
-      - 'scripts/fetch-news.js'
-      - '.github/workflows/fetch-news.yml'
-
-# 스케줄이 겹쳐 돌면 커밋이 충돌한다
-concurrency:
-  group: fetch-news
-  cancel-in-progress: false
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      chain:
+        description: '앞 차례가 부른 실행인가 (직접 누를 때는 끈 채로 둔다)'
+        type: boolean
+        default: false
+  schedule:
+    # 예비용 — 사슬이 끊겼을 때 다시 잇는다. 정시·5분 단위는 예약이 몰리는 시각이라 피한다.
+    - cron: '7,37 * * * *'
 
 permissions:
-  contents: write
+  contents: write     # 저장소 사본 커밋
+  pages: write        # 사이트 배포
+  id-token: write     # 사이트 배포
+  actions: write      # 다음 차례 부르기, 지난 실행 기록 지우기
+  deployments: write  # 지난 배포 기록 지우기
+
+# 한 번에 하나만 돈다. 대기 중인 실행은 하나만 남고 나머지는 취소되므로,
+# 푸시·예약·수동 실행이 끼어들어도 사슬이 여러 갈래로 늘지 않고 하나로 합쳐진다.
+concurrency:
+  group: news
+  cancel-in-progress: false
 
 jobs:
-  fetch:
+  wait:
+    # 앞 차례가 부른 실행만 기다린다. 대기 시간은 환경 news-interval 의 wait timer(14분)에 있다.
+    if: github.event_name == 'workflow_dispatch' && inputs.chain
     runs-on: ubuntu-latest
+    environment: news-interval
     steps:
+      - name: 실제로 기다렸는지 확인
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          created=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq .created_at)
+          waited=$(( $(date +%s) - $(date -d "$created" +%s) ))
+          echo "기다린 시간: $((waited / 60))분 $((waited % 60))초"
+          # 환경의 타이머가 사라지면 기다리지 않고 곧바로 다음 차례를 불러 끝없이 돈다. 여기서 사슬을 끊는다.
+          if [ "$waited" -lt 600 ]; then
+            echo "::error::환경 news-interval 에 대기 타이머가 없다. 사슬을 멈춘다 (AGENTS.md 4항)."
+            exit 1
+          fi
+
+  build:
+    needs: wait
+    # 기다리기를 건너뛴 실행(푸시·수동·예약)도 수집한다. 대기 확인이 실패했으면 하지 않는다.
+    if: ${{ !cancelled() && needs.wait.result != 'failure' }}
+    runs-on: ubuntu-latest
+    outputs:
+      daily: ${{ steps.daily.outputs.daily }}
+    steps:
+      # 기다리는 사이 올라온 커밋까지 배포하도록 main 최신본을 받는다. 하루 판단에 이력이 필요하다.
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -43,21 +86,99 @@ jobs:
       - name: RSS 수집
         run: node scripts/fetch-news.js
 
-      - name: 변경이 있을 때만 커밋
+      - uses: actions/configure-pages@v5
+
+      - name: 배포할 파일 모으기
+        run: |
+          mkdir -p _site/icons _site/data
+          cp index.html app.js manifest.webmanifest sw.js _site/
+          cp icons/*.png _site/icons/
+          cp data/mock-news.js data/news.js _site/data/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+          retention-days: 1
+
+      - name: 하루 한 번 할 일인가
+        id: daily
+        run: |
+          last=$(git log -1 --format=%ct -- data/news.js)
+          age=$(( $(date +%s) - ${last:-0} ))
+          echo "저장소 사본은 $((age / 3600))시간 $((age % 3600 / 60))분 전에 커밋했다."
+          echo "daily=$([ "$age" -ge 86400 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: 저장소 사본 커밋 (하루 한 번)
+        if: steps.daily.outputs.daily == 'true'
+        # 실패해도 사이트 배포는 한다. 다음 차례에 다시 시도한다.
+        continue-on-error: true
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # 내용이 같으면 커밋하지 않는다. 돌 때마다 빈 커밋이 쌓이는 것을 막는다.
-          if git diff --quiet -- data/news.js; then
-            echo "변경 없음 — 커밋하지 않습니다."
-            exit 0
-          fi
-
           COUNT=$(grep -o '"id":' data/news.js | wc -l)
           git add data/news.js
           git commit -m "뉴스 갱신: ${COUNT}건 ($(date -u '+%Y-%m-%d %H:%M UTC'))"
+          # 그 사이 사람이 푸시했을 수 있으므로 rebase 후 푸시한다
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main
 
-          # 스케줄이 겹쳐 원격이 앞서 있을 수 있으므로 rebase 후 푸시한다
-          git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
-          git push
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  next:
+    # 수집·배포가 실패해도 다음 차례는 부른다(한 번 실패로 사슬이 끊기지 않게).
+    # 사람이 실행을 취소하면 부르지 않는다 — 사슬을 멈추는 방법이다.
+    needs: [wait, build, deploy]
+    if: ${{ !cancelled() && needs.wait.result != 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 다음 차례 부르기
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for i in 1 2 3; do
+            gh workflow run fetch-news.yml --repo "${GITHUB_REPOSITORY}" --ref main -f chain=true && exit 0
+            sleep 15
+          done
+          echo "::error::다음 차례를 부르지 못했다. 예비 예약이나 다음 푸시 때 다시 이어진다."
+          exit 1
+
+  cleanup:
+    # 하루 한 번(저장소 사본을 커밋하는 차례에) 7일 지난 실행 기록과 배포 기록을 지운다.
+    # 실패해도 수집·배포·다음 차례에는 영향이 없다.
+    needs: build
+    if: needs.build.outputs.daily == 'true'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      R: ${{ github.repository }}
+    steps:
+      - name: 7일 지난 실행 기록 지우기
+        run: |
+          cutoff=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          ids=$(gh api -X GET --paginate "repos/$R/actions/workflows/fetch-news.yml/runs" \
+                  -f created="<$cutoff" -f per_page=100 --jq '.workflow_runs[].id')
+          echo "지울 실행 기록: $(printf '%s\n' $ids | grep -c . || true)건 ($cutoff 이전)"
+          for id in $ids; do gh api -X DELETE "repos/$R/actions/runs/$id" --silent || true; done
+
+      - name: 7일 지난 배포 기록 지우기
+        run: |
+          cutoff=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          for env in news-interval github-pages; do
+            ids=$(gh api --paginate "repos/$R/deployments?environment=$env&per_page=100" \
+                    --jq ".[] | select(.created_at < \"$cutoff\") | .id")
+            echo "$env: 지울 배포 기록 $(printf '%s\n' $ids | grep -c . || true)건"
+            for id in $ids; do
+              # 배포 기록은 비활성으로 돌린 뒤에야 지울 수 있다. 7일 지난 것만 건드리므로 지금 사이트와는 상관없다.
+              gh api -X POST "repos/$R/deployments/$id/statuses" -f state=inactive --silent || true
+              gh api -X DELETE "repos/$R/deployments/$id" --silent || true
+            done
+          done

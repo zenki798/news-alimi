@@ -26,8 +26,8 @@ https://zenki798.github.io/news-alimi/ 를 열고 홈 화면에 추가하면 주
 
 ## 뉴스는 어디서 오나
 
-각 언론사가 **공개 배포하는 RSS**를 GitHub Actions가 15분 간격으로 읽어옵니다.
-GitHub가 예약 실행을 늦추거나 건너뛸 때가 있어서 간격은 들쭉날쭉합니다.
+각 언론사가 **공개 배포하는 RSS**를 GitHub Actions가 **약 15분마다** 읽어와 사이트에 바로 올립니다.
+한 번 돌 때마다 15분 뒤의 다음 차례를 스스로 예약합니다(GitHub의 시간 예약 기능은 몇 시간씩 건너뛰어서 쓰지 않습니다).
 화면 위쪽의 **"N분 전 수집"** 이 실제로 뉴스를 모은 시각입니다.
 담는 것은 **제목 · 원문 링크 · RSS가 스스로 제공하는 짧은 발췌(180자) · 출처명 · 발행시각**뿐입니다.
 
@@ -111,12 +111,11 @@ Actions 탭 → **뉴스 다이제스트 메일** → **Run workflow** (워크�
 index.html                         화면
 app.js                             렌더링·필터·검색·정렬·읽음 표시
 data/mock-news.js                  견본 데이터 (기본값, 실제 뉴스 아님)
-data/news.js                       수집 결과 — 자동 생성물, 직접 수정 금지
+data/news.js                       수집 결과 사본(하루 한 번 커밋) — 자동 생성물, 직접 수정 금지
 manifest.webmanifest · sw.js       앱(PWA) 설치 정보 · 서비스 워커
 icons/                             앱 아이콘 (npm run make:icons 로 생성)
 scripts/fetch-news.js              RSS 수집기 (의존성 없음)
-.github/workflows/fetch-news.yml   15분 간격 수집
-.github/workflows/pages.yml        Pages 배포
+.github/workflows/fetch-news.yml   약 15분마다 수집·배포 (7일 지난 실행 기록은 자동 삭제)
 tests/                             Playwright 테스트
 ```
 
