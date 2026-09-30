@@ -12,13 +12,18 @@ const { open, setView, shownCount, logicalCount } = require('./helpers');
  * 기사 수가 늘어도 깨지지 않도록, 실제 기사를 대량으로 주입해서 확인한다.
  */
 
-/** 기사를 n건으로 불려서 다시 그린다 (데이터 계층을 건드리지 않고 화면만 시험) */
+/** 기사를 n건으로 불려서 다시 그린다 (데이터 계층을 건드리지 않고 화면만 시험)
+ *  카테고리를 돌아가며 고르게 복제한다. 실제 수집본은 분야별 건수가 크게 치우칠 수 있어서
+ *  (예: IT 1건, 나머지 14건씩) 그대로 복제하면 100건으로 불려도 작은 칼럼이 상한까지 차지 않는다. */
 async function inflate(page, n) {
   await page.evaluate((count) => {
-    const src = window.NewsData.articles.slice();
+    const byCat = {};
+    window.NewsData.articles.forEach(a => (byCat[a.category] = byCat[a.category] || []).push(a));
+    const keys = Object.keys(byCat);
     const out = [];
     for (let i = 0; out.length < count; i++) {
-      const a = src[i % src.length];
+      const list = byCat[keys[i % keys.length]];
+      const a = list[Math.floor(i / keys.length) % list.length];
       const copy = Object.assign({}, a, { id: a.id + '-x' + i });
       out.push(copy);
     }

@@ -27,6 +27,8 @@ npx playwright test
 | 데이터 정합성 | 모든 기사의 category 가 CATEGORIES 에 존재하고, id 가 중복되지 않는다 |
 | 읽음 표시 | 클릭하면 읽음으로 남고, 새로고침 후에도 유지된다 |
 | `file://` 동작 | 파일을 더블클릭해서 열어도 전부 정상 동작한다 |
+| 앱 설치(PWA) | 크롬 설치 불가 사유 0건, manifest `standalone`, 아이콘 실제 크기 일치, 오프라인에서도 마지막 뉴스가 뜬다 |
+| 앱 모드 | `?source=pwa` 로 열면 새로고침 버튼이 보이고, 누르면 보던 조건 그대로 새 뉴스를 받는다 |
 
 ### `file://` 를 반드시 같이 테스트하는 이유
 
@@ -151,3 +153,37 @@ Pages 가 정적으로 서빙해야 하므로 저장소에 있어야 한다. 담
 
 GitHub 는 **60일간 저장소 활동이 없으면 예약 워크플로를 비활성화**한다.
 수집이 끊겼으면 Actions 탭에서 다시 활성화하거나 아무 커밋이나 밀어넣으면 된다.
+
+## 5. 앱(PWA)으로 설치
+
+홈 화면에 추가했을 때 주소창·툴바 없이 뜨도록 PWA 로 만들었다.
+
+```
+manifest.webmanifest    앱 정보 (이름·아이콘·standalone·start_url)
+sw.js                   서비스 워커 (설치 조건 + 오프라인에서 마지막 뉴스 표시)
+icons/                  앱 아이콘 PNG — scripts/make-icons.js 로 만든다 (직접 그리지 않는다)
+tests/pwa.spec.js       설치 가능 여부(크롬 CDP)·오프라인·앱 모드·새로고침
+```
+
+- `display: "standalone"` 을 쓴다. `fullscreen` 은 시계·배터리 표시줄까지 숨기고 iOS 는 지원하지 않는다.
+- 설치 조건: manifest(이름·아이콘 192/512·start_url·display) + 서비스 워커 + https.
+  `tests/pwa.spec.js` 가 크롬 CDP `Page.getInstallabilityErrors` 로 설치 불가 사유 0건을 확인한다.
+- 서비스 워커는 **네트워크 우선**이다. 뉴스는 30분마다 바뀌므로 캐시 우선으로 바꾸면 옛 뉴스를 보게 된다.
+  `data/news.js` 는 브라우저 HTTP 캐시(Pages 10분)도 거치지 않게 `no-cache` 로 받는다.
+  캐시할 파일 목록을 바꾸면 `sw.js` 의 `CACHE` 이름(버전)을 올린다.
+- 화면이 어두우므로 아이폰 상태 표시줄은 `black-translucent`(화면 위에 겹침)로 두고,
+  `viewport-fit=cover` + `env(safe-area-inset-*)` 여백으로 노치·홈 표시줄을 비킨다.
+- 아이폰은 설치 API 가 없어 사파리 공유 → "홈 화면에 추가" 를 글로 안내한다.
+
+### 앱 모드
+
+앱으로 실행하면(`display-mode: standalone` 또는 start_url 의 `?source=pwa`) `html.app-mode` 가 붙는다.
+**앱에는 브라우저 새로고침 버튼이 없다.** 그래서 앱 모드에서만 화면에 `새로고침` 버튼을 내고,
+앱으로 10분 넘게 지나 돌아오면 저절로 다시 받는다. 둘 다 `data/news.js` 만 다시 싣기 때문에
+검색어·카테고리·보기 방식이 그대로 남는다. 기사 링크는 앱 위에 겹쳐 뜨는 브라우저로 열리고, 닫으면 앱으로 돌아온다.
+
+### 수집이 끝나면 Pages 배포가 이어서 돈다
+
+수집 워크플로가 `GITHUB_TOKEN` 으로 올린 커밋은 **push 이벤트를 만들지 않는다.** 그래서
+`pages.yml` 이 `workflow_run`(뉴스 수집 완료)으로도 돈다. 이 연결을 지우면 저장소의 뉴스는 갱신되는데
+**사이트는 옛 뉴스에 멈춘다** (2026-09-30 에 실제로 하루 넘게 멈춰 있던 것을 발견해 고쳤다).

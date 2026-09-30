@@ -6,6 +6,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # 수집 워크플로가 올린 커밋(GITHUB_TOKEN)은 push 이벤트를 일으키지 않는다.
+  # 그래서 수집이 끝날 때마다 여기서 이어받아 배포한다. 이게 없으면 사이트의 뉴스가 멈춘다.
+  workflow_run:
+    workflows: ['뉴스 수집']
+    types: [completed]
 
 permissions:
   contents: read
@@ -19,19 +24,26 @@ concurrency:
 
 jobs:
   deploy:
+    # 수집이 실패했으면 배포할 새 내용이 없다
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # workflow_run 으로 불렸을 때도 수집 커밋이 들어간 main 최신본을 받는다
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/configure-pages@v5
 
       - name: 배포할 파일 모으기
         run: |
           mkdir -p _site
-          cp index.html app.js _site/
+          cp index.html app.js manifest.webmanifest sw.js _site/
+          mkdir -p _site/icons
+          cp icons/*.png _site/icons/
           mkdir -p _site/data
           cp data/mock-news.js _site/data/
           # 수집 결과가 아직 없을 수도 있다. 그때는 목업으로 뜬다.

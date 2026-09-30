@@ -113,4 +113,30 @@ test.describe('화면과 조작', () => {
     await expect(page.locator('#list')).toHaveClass(/compact/);
     await expect(page.locator('#list ul li.row').first()).toBeVisible();
   });
+
+  test('선택한 보기 버튼은 강조 배경이 칠해져 글자가 보인다', async ({ page }) => {
+    await open(page);
+    for (const view of ['dashboard', 'card', 'compact']) {
+      await setView(page, view);
+      const bg = await page.locator('#views button[data-view="' + view + '"]').evaluate(el => getComputedStyle(el).backgroundColor);
+      expect(bg, view).toBe('rgb(91, 156, 255)');    // --accent. 투명이면 어두운 글자가 바탕에 묻힌다
+    }
+  });
+
+  test('주요 뉴스의 시각이 상자 밖으로 삐져나가지 않는다 (긴 제목은 말줄임)', async ({ page }) => {
+    await open(page);
+    await page.evaluate(() => {
+      const a = window.NewsData.articles.find(x => x.importance >= 3);
+      a.title = '아주 긴 제목 '.repeat(30);
+      window.__app.render();
+    });
+    const box = await page.locator('#headline').boundingBox();
+    const times = page.locator('#headline time');
+    const n = await times.count();
+    expect(n).toBeGreaterThan(0);
+    for (let i = 0; i < n; i++) {
+      const t = await times.nth(i).boundingBox();
+      expect(t.x + t.width, (i + 1) + '번째 시각').toBeLessThanOrEqual(box.x + box.width);
+    }
+  });
 });

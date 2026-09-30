@@ -2,8 +2,19 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>뉴스알리미 — 한눈에 보는 뉴스 요약</title>
+<meta name="description" content="여러 분야의 뉴스를 한 화면에서 훑어봅니다. 30분마다 갱신됩니다.">
+<!-- 홈 화면에 추가하면 주소창·툴바 없이 앱처럼 뜬다 (AGENTS.md 5항 "앱(PWA)으로 설치") -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f1319">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="뉴스알리미">
+<!-- 어두운 화면이라 아이폰 상태 표시줄도 화면 색 위에 겹쳐 띄운다. 가려지는 만큼은 safe-area 여백으로 비킨다 -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <style>
   :root{
     --bg:#0f1319; --card:#1a222e; --line:#2a3542;
@@ -17,7 +28,30 @@
     font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
     font-size:15px; line-height:1.6;
   }
-  .wrap{max-width:1260px; margin:0 auto; padding-block:26px; padding-left:20px; padding-right:20px}
+  /* 노치·홈 표시줄이 있는 기기에서 내용이 가려지지 않게 안전 영역만큼 띄운다 */
+  .wrap{
+    max-width:1260px; margin:0 auto;
+    padding:calc(26px + env(safe-area-inset-top)) max(20px, env(safe-area-inset-right))
+            calc(26px + env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  }
+
+  /* 앱(홈 화면)으로 실행 중일 때: 웹페이지 티가 나는 동작을 줄인다 */
+  html.app-mode{-webkit-tap-highlight-color:transparent}
+  html.app-mode body{overscroll-behavior-y:none}
+  html.app-mode button, html.app-mode .chip, html.app-mode select{-webkit-user-select:none; user-select:none}
+  /* 앱에는 브라우저 새로고침 버튼이 없다. 그 자리를 대신한다 (브라우저로 볼 때는 숨김) */
+  html:not(.app-mode) #btnRefresh{display:none}
+  #btnRefresh[aria-busy="true"]{opacity:.6; cursor:progress}
+
+  .install{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    background:rgba(91,156,255,.10); border:1px solid rgba(91,156,255,.35);
+    border-radius:10px; padding:10px 14px; font-size:13.5px; margin-bottom:14px;
+  }
+  .install span{flex:1; min-width:180px}
+  .install button{font-size:13px; padding:6px 12px}
+  #install-btn{background:var(--accent); border-color:var(--accent); color:#06121f; font-weight:700}
+  #install-close{background:none; border-color:transparent; color:var(--dim)}
 
   /* ---- 헤더 ---- */
   header.top{display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-bottom:16px}
@@ -50,6 +84,8 @@
   #views{display:inline-flex; background:var(--card); border:1px solid var(--line); border-radius:9px; overflow:hidden}
   #views button{border:0; border-radius:0; background:transparent; padding:8px 13px; font-size:13.5px}
   #views button + button{border-left:1px solid var(--line)}
+  /* 위의 transparent 가 눌림 배경을 덮으면 어두운 글자가 어두운 바탕에 묻힌다 */
+  #views button[aria-pressed="true"]{background:var(--accent)}
   .perCat{display:inline-flex; align-items:center; gap:7px; font-size:13px; color:var(--dim)}
   .perCat select{padding:7px 9px}
 
@@ -77,7 +113,8 @@
   }
   #headline ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:5px; flex:1 1 auto; min-width:0}
   #headline li{display:flex; gap:10px; align-items:baseline; border-left:2px solid var(--c); padding-left:9px}
-  #headline a{color:var(--tx); text-decoration:none; font-weight:600; font-size:14.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  /* min-width:0 이 없으면 긴 제목이 줄지 않아 시각이 상자 밖으로 밀려난다 */
+  #headline a{color:var(--tx); text-decoration:none; font-weight:600; font-size:14.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0}
   #headline a:hover{color:var(--accent)}
   #headline time{flex:0 0 auto; margin-left:auto; font-size:11.5px; color:var(--dim); font-variant-numeric:tabular-nums}
 
@@ -139,6 +176,8 @@
     .row .cat, .row .src{display:none}
     .stats{width:100%; margin-left:0}
     #headline{flex-direction:column}
+    /* 세로로 쌓이면 align-items:flex-start 때문에 목록이 제목 길이만큼 넓어진다. 상자 폭에 맞춘다 */
+    #headline ul{align-self:stretch}
     #headline time{margin-left:0}
   }
 </style>
@@ -157,6 +196,12 @@
       <span>읽음 <b id="readCount">0</b>건</span>
     </div>
   </header>
+
+  <div id="install-bar" class="install" role="note" hidden>
+    <span id="install-text"></span>
+    <button type="button" id="install-btn" hidden>앱으로 설치</button>
+    <button type="button" id="install-close" aria-label="안내 닫기">닫기</button>
+  </div>
 
   <div id="mockBanner" hidden></div>
 
@@ -181,6 +226,7 @@
     </select>
     <button id="btnUnread" aria-pressed="false">읽지 않은 것만</button>
     <button id="btnReset">읽음 초기화</button>
+    <button id="btnRefresh" type="button">새로고침</button>
   </div>
 
   <div id="chips"></div>

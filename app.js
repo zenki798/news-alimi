@@ -20,6 +20,21 @@
 
   const PAGE = 12;          // card·compact 보기에서 한 번에 늘리는 건수
 
+  /* 앱 모드: 홈 화면에 설치해서 실행한 경우. manifest 의 start_url 에 ?source=pwa 를 붙여 두었다.
+     앱에는 주소창·새로고침 버튼이 없으므로 화면에 새로고침 버튼을 내고, 앱으로 돌아올 때 뉴스를 다시 받는다. */
+  const APP_MODE = (() => {
+    try {
+      return global.matchMedia('(display-mode: standalone)').matches ||
+        global.matchMedia('(display-mode: fullscreen)').matches ||
+        navigator.standalone === true ||
+        new URL(location.href).searchParams.get('source') === 'pwa';
+    } catch (e) { return false; }
+  })();
+  document.documentElement.classList.toggle('app-mode', APP_MODE);
+
+  const STALE_MS = 10 * 60 * 1000;   // 앱으로 돌아왔을 때 이보다 오래됐으면 다시 받는다
+  let loadedAt = Date.now();
+
   /* ---------- 상태 ---------- */
   const state = {
     category: 'all',
@@ -336,11 +351,83 @@
       render();
     });
 
+    $('btnRefresh').addEventListener('click', refreshData);
+    document.addEventListener('visibilitychange', () => {
+      if (APP_MODE && document.visibilityState === 'visible' && Date.now() - loadedAt > STALE_MS) refreshData();
+    });
+
+    initInstall();
     render();
   }
 
+  /* ---------- 뉴스 다시 받기 ----------
+     data/news.js 를 script 로 다시 싣는다 (file:// 과 같은 방식). 페이지를 통째로 새로 열지 않으므로
+     검색어·카테고리·보기 방식이 그대로 남는다. ?t= 는 브라우저 캐시를 피하려고 붙인다. */
+  function refreshData() {
+    const btn = $('btnRefresh');
+    if (btn.getAttribute('aria-busy') === 'true') return Promise.resolve(false);
+    btn.setAttribute('aria-busy', 'true');
+    btn.textContent = '새로고침 중…';
+    return new Promise(resolve => {
+      const s = document.createElement('script');
+      s.src = 'data/news.js?t=' + Date.now();
+      const done = ok => {
+        s.remove();
+        btn.removeAttribute('aria-busy');
+        /* 오프라인이면 서비스 워커가 마지막으로 받은 뉴스를 돌려준다. 그 사실을 알린다. */
+        btn.textContent = ok && navigator.onLine !== false ? '새로고침' : '연결 안 됨 · 다시 시도';
+        if (ok) { loadedAt = Date.now(); renderBanner(); render(); }
+        resolve(ok);
+      };
+      s.onload = () => done(true);
+      s.onerror = () => done(false);
+      document.head.appendChild(s);
+    });
+  }
+
+  /* ---------- 앱 설치 안내 ----------
+     안드로이드 크롬: 설치 가능하면 beforeinstallprompt 가 온다 → "앱으로 설치" 버튼.
+     아이폰 사파리: 설치 API 가 없다 → 공유 메뉴에서 추가하는 방법을 글로 안내한다. */
+  const KEY_INSTALL = 'newsalimi.installHint';
+  let installEvent = null;
+
+  function initInstall() {
+    const bar = $('install-bar');
+    const dismissed = () => { try { return localStorage.getItem(KEY_INSTALL) === 'off'; } catch (e) { return false; } };
+    const show = (text, withButton) => {
+      if (APP_MODE || dismissed()) return;
+      $('install-text').textContent = text;
+      $('install-btn').hidden = !withButton;
+      bar.hidden = false;
+    };
+
+    global.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      installEvent = e;
+      show('홈 화면에 설치하면 주소창 없이 앱처럼 볼 수 있어요.', true);
+    });
+    global.addEventListener('appinstalled', () => { bar.hidden = true; });
+    $('install-btn').addEventListener('click', () => {
+      if (!installEvent) return;
+      installEvent.prompt();
+      installEvent.userChoice.finally(() => { installEvent = null; bar.hidden = true; });
+    });
+    $('install-close').addEventListener('click', () => {
+      bar.hidden = true;
+      try { localStorage.setItem(KEY_INSTALL, 'off'); } catch (e) { /* 무시 */ }
+    });
+    if (/iPhone|iPad|iPod/.test(navigator.userAgent) && location.protocol === 'https:') {
+      show('앱처럼 보려면: 사파리 아래쪽 공유 버튼(□↑) → "홈 화면에 추가"', false);
+    }
+
+    /* 서비스 워커: 설치 조건을 채우고 오프라인에서도 마지막 뉴스를 띄운다. file:// 에서는 쓸 수 없다. */
+    if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+      navigator.serviceWorker.register('sw.js').catch(() => { /* 실패해도 페이지는 동작한다 */ });
+    }
+  }
+
   /* 테스트에서 내부 상태를 확인할 수 있도록 노출한다 */
-  global.__app = { state, base, filtered, relTime, matches, render, init, PAGE };
+  global.__app = { state, base, filtered, relTime, matches, render, init, PAGE, APP_MODE, refreshData };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
