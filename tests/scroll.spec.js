@@ -14,7 +14,9 @@ const { open, setView, shownCount, logicalCount } = require('./helpers');
 
 /** 기사를 n건으로 불려서 다시 그린다 (데이터 계층을 건드리지 않고 화면만 시험)
  *  카테고리를 돌아가며 고르게 복제한다. 실제 수집본은 분야별 건수가 크게 치우칠 수 있어서
- *  (예: IT 1건, 나머지 14건씩) 그대로 복제하면 100건으로 불려도 작은 칼럼이 상한까지 차지 않는다. */
+ *  (예: IT 1건, 나머지 14건씩) 그대로 복제하면 100건으로 불려도 작은 칼럼이 상한까지 차지 않는다.
+ *  복제본은 원본보다 하루씩 오래된 것으로 둔다. 발행 시각이 같으면 1000건일 때 칼럼 맨 위가
+ *  "가장 최신 기사의 복제본들"로 바뀌어, 기사 수가 아니라 제목 길이 차이로 높이가 달라진다. */
 async function inflate(page, n) {
   await page.evaluate((count) => {
     const byCat = {};
@@ -23,8 +25,11 @@ async function inflate(page, n) {
     const out = [];
     for (let i = 0; out.length < count; i++) {
       const list = byCat[keys[i % keys.length]];
-      const a = list[Math.floor(i / keys.length) % list.length];
+      const j = Math.floor(i / keys.length);
+      const a = list[j % list.length];
+      const pass = Math.floor(j / list.length);   // 0 이면 원본 그대로, 1 부터 복제본
       const copy = Object.assign({}, a, { id: a.id + '-x' + i });
+      if (pass > 0) copy.publishedAt = new Date(new Date(a.publishedAt).getTime() - pass * 86400000).toISOString();
       out.push(copy);
     }
     window.NewsData.articles = out;

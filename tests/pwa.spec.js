@@ -1,6 +1,5 @@
 // 앱(PWA) 설치 — 홈 화면에 추가하면 주소창·툴바 없이 뜨는지, 앱 안에서 뉴스를 다시 받을 수 있는지
-const fs = require('fs');
-const path = require('path');
+// (배포에 앱 파일이 들어가는지는 workflows.spec.js 에서 본다)
 const { test, expect } = require('@playwright/test');
 const { open, waitReady, setView } = require('./helpers');
 
@@ -109,16 +108,6 @@ test('노치 대응(viewport-fit=cover)·테마 색상·아이폰 앱 설정이 
   await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#0f1319');
   await expect(page.locator('meta[name="apple-mobile-web-app-capable"]')).toHaveAttribute('content', 'yes');
   await expect(page.locator('meta[name="apple-mobile-web-app-status-bar-style"]')).toHaveAttribute('content', 'black-translucent');
-});
-
-test('배포에 앱 파일이 포함되고, 수집이 끝나면 배포가 이어서 돈다', async () => {
-  const yml = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'pages.yml'), 'utf8');
-  expect(yml).toContain('manifest.webmanifest sw.js');
-  expect(yml).toContain('icons/*.png');
-  // 봇 커밋은 push 이벤트를 만들지 않는다. 이 연결이 없으면 사이트의 뉴스가 멈춘다.
-  expect(yml).toMatch(/workflow_run:\s*\n\s*workflows: \['뉴스 수집'\]/);
-  const fetchYml = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'fetch-news.yml'), 'utf8');
-  expect(fetchYml).toMatch(/^name: 뉴스 수집$/m);
 });
 
 test.describe('앱 모드 (홈 화면에서 실행)', () => {

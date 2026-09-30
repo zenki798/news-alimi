@@ -97,13 +97,16 @@ function safeChar(code) {
   try { return String.fromCodePoint(code); } catch (e) { return ''; }
 }
 
-/** CDATA 를 벗기고 태그를 없애고 공백을 정리한다 */
+/** CDATA 를 벗기고 태그를 없애고 공백을 정리한다.
+ *  이스케이프는 두 번 푼다. 요약(description)을 HTML 로 이스케이프한 뒤 XML 로 한 번 더 감싸 보내는
+ *  피드가 있다 — 연합뉴스는 E&S 를 E&amp;amp;S 로 보낸다. 한 번만 풀면 화면에 E&amp;S 가 그대로 남는다.
+ *  한 번만 감싼 글은 두 번째에 바뀔 것이 없다. */
 function clean(raw) {
   if (!raw) return '';
   let s = String(raw);
   s = s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1');
   s = s.replace(/<[^>]*>/g, ' ');
-  s = decodeEntities(s);
+  s = decodeEntities(decodeEntities(s));
   return s.replace(/\s+/g, ' ').trim();
 }
 
@@ -325,7 +328,12 @@ async function main() {
   console.log('생성: ' + dest);
 }
 
-main().catch(e => {
-  console.error('수집 실패:', e && e.stack ? e.stack : e);
-  process.exit(1);
-});
+/* `node scripts/fetch-news.js` 로 실행할 때만 수집한다. 테스트가 require 해서 정리 함수만 쓸 수 있게 한다. */
+if (require.main === module) {
+  main().catch(e => {
+    console.error('수집 실패:', e && e.stack ? e.stack : e);
+    process.exit(1);
+  });
+}
+
+module.exports = { clean, decodeEntities };

@@ -9,8 +9,11 @@ name: 뉴스 수집
 
 on:
   schedule:
-    # 30분마다. UTC 기준이지만 주기라서 시차와 무관하다.
-    - cron: '*/30 * * * *'
+    # 15분 간격, 정시·5분 단위를 피한 7·22·37·52분.
+    # GitHub 는 예약 실행을 보장하지 않는다. 정시처럼 예약이 몰리는 시각에는 늦추거나 건너뛴다.
+    # '*/30'(매시 0·30분)으로 두었을 때 이틀간 9번, 4~8시간 간격으로만 돌았다 (2026-09-30 확인).
+    # 몇 번 건너뛰어도 30분 안에 한 번은 돌도록 간격을 촘촘히 둔다. 되돌리지 않는다 (tests/workflows.spec.js).
+    - cron: '7,22,37,52 * * * *'
   # 수동 실행도 열어둔다 (Actions 탭 → Run workflow)
   workflow_dispatch:
   # 수집기를 고쳤을 때 바로 확인할 수 있게 한다
@@ -45,7 +48,7 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # 내용이 같으면 커밋하지 않는다. 30분마다 빈 커밋이 쌓이는 것을 막는다.
+          # 내용이 같으면 커밋하지 않는다. 돌 때마다 빈 커밋이 쌓이는 것을 막는다.
           if git diff --quiet -- data/news.js; then
             echo "변경 없음 — 커밋하지 않습니다."
             exit 0

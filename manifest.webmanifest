@@ -2,7 +2,7 @@
   "id": "./",
   "name": "뉴스알리미 — 한눈에 보는 뉴스 요약",
   "short_name": "뉴스알리미",
-  "description": "여러 분야의 뉴스를 한 화면에서 훑어봅니다. 30분마다 갱신됩니다.",
+  "description": "여러 분야의 뉴스를 한 화면에서 훑어봅니다. 자동으로 수집해 갱신합니다.",
   "lang": "ko",
   "dir": "ltr",
   "start_url": "./?source=pwa",

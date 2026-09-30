@@ -128,7 +128,7 @@
       el.hidden = true;
     }
 
-    /* 언제 수집된 데이터인지 밝힌다. 30분마다 갱신되므로 최신인지 알 수 있어야 한다. */
+    /* 언제 수집된 데이터인지 밝힌다. 예약 수집은 늦어지거나 건너뛸 때가 있으므로 최신인지 알 수 있어야 한다. */
     const up = $('updated');
     if (NewsData.generatedAt) {
       up.hidden = false;
