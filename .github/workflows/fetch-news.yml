@@ -124,6 +124,9 @@ jobs:
 
   deploy:
     needs: build
+    # 조건을 직접 적는다. 안 적으면 GitHub 가 success() 를 붙이는데, success() 는 앞선 작업 전부를 봐서
+    # wait 를 건너뛴 실행(푸시·수동·예약)에서는 배포까지 건너뛴다 (2026-09-30 첫 적용 때 겪음).
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -154,7 +157,7 @@ jobs:
     # 하루 한 번(저장소 사본을 커밋하는 차례에) 7일 지난 실행 기록과 배포 기록을 지운다.
     # 실패해도 수집·배포·다음 차례에는 영향이 없다.
     needs: build
-    if: needs.build.outputs.daily == 'true'
+    if: ${{ !cancelled() && needs.build.result == 'success' && needs.build.outputs.daily == 'true' }}
     continue-on-error: true
     runs-on: ubuntu-latest
     env:

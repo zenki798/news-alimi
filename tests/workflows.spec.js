@@ -47,8 +47,20 @@ test('사이트를 올리는 워크플로는 하나다 — 방금 모은 뉴스�
   expect(build).toMatch(/ref: main/);
 
   expect(jobs.deploy).toMatch(/needs: build/);
+  expect(ifOf(jobs.deploy)).toBe("${{ !cancelled() && needs.build.result == 'success' }}");
   expect(jobs.deploy).toContain('name: github-pages');
   expect(jobs.deploy).toContain('actions/deploy-pages');
+});
+
+test('기다리기(wait)를 건너뛴 실행에서도 뒤 작업이 모두 돈다 — wait 뒤의 작업은 조건을 직접 적는다', async () => {
+  /* GitHub 는 if 에 상태 함수(!cancelled() 등)가 없으면 success() 를 붙이고, success() 는 앞선 작업
+     "전부"를 본다. 푸시·수동·예약 실행은 wait 를 건너뛰므로 조건이 없는 작업은 줄줄이 건너뛴다.
+     2026-09-30 첫 적용 때 이 때문에 수집은 했는데 배포(deploy)가 건너뛰어졌다. */
+  const jobs = jobsOf(read(WF));
+  for (const [name, body] of Object.entries(jobs)) {
+    if (name === 'wait') continue;
+    expect(ifOf(body), name + ' 의 if').toContain('!cancelled()');
+  }
 });
 
 test('끝날 때마다 다음 차례를 부르고, 다음 차례는 환경의 대기 타이머로 기다린다', async () => {
@@ -110,7 +122,7 @@ test('15분마다 생기는 기록은 오래되면 지운다 — 배포 산출�
 
   // 하루 한 번(저장소 사본을 커밋하는 차례에) 돌고, 실패해도 수집·배포·다음 차례에는 영향이 없다
   const cleanup = jobs.cleanup;
-  expect(ifOf(cleanup)).toBe("needs.build.outputs.daily == 'true'");
+  expect(ifOf(cleanup)).toBe("${{ !cancelled() && needs.build.result == 'success' && needs.build.outputs.daily == 'true' }}");
   expect(cleanup).toMatch(/^ {4}continue-on-error: true$/m);
   expect(jobs.next).not.toContain('cleanup');
 
