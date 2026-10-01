@@ -73,7 +73,9 @@
   const KEY_READ = 'newsalimi.read';
   const KEY_VIEW = 'newsalimi.view';
   const KEY_PER  = 'newsalimi.perCat';
-  const KEY_CATS = 'newsalimi.cats';   // 고른 분야 — 원하는 분야만 골라 두고 쓰므로 다음에 열어도 남긴다
+  /* 고른 분야는 저장하지 않는다 — 열 때는 늘 "전체"로 시작한다(사용자 요청, 2026-10-01).
+     잠깐 저장하던 버전(a3ac417)이 남긴 값은 열 때 지운다. */
+  const KEY_CATS_OLD = 'newsalimi.cats';
 
   function loadPrefs() {
     try {
@@ -83,8 +85,7 @@
       if (v === 'dashboard' || v === 'card' || v === 'compact') state.view = v;
       const p = Number(localStorage.getItem(KEY_PER));
       if ([3, 4, 5, 10].indexOf(p) >= 0) state.perCat = p;
-      const c = JSON.parse(localStorage.getItem(KEY_CATS) || '[]');
-      if (Array.isArray(c)) c.forEach(k => { if (NewsData.category(k)) state.cats.add(k); });
+      localStorage.removeItem(KEY_CATS_OLD);
     } catch (e) { /* 저장소를 못 써도 화면은 정상 동작해야 한다 */ }
   }
 
@@ -94,11 +95,6 @@
       localStorage.setItem(KEY_VIEW, state.view);
       localStorage.setItem(KEY_PER, String(state.perCat));
     } catch (e) { /* 무시 */ }
-  }
-
-  /** 고른 분야는 칩을 직접 눌렀을 때만 저장한다. 칸의 "더 보기"로 한 분야를 잠깐 볼 때 골라 둔 것을 덮어쓰지 않게 */
-  function saveCats() {
-    try { localStorage.setItem(KEY_CATS, JSON.stringify(Array.from(state.cats))); } catch (e) { /* 무시 */ }
   }
 
   /* ---------- 유틸 ---------- */
@@ -218,7 +214,6 @@
         else state.cats.add(k);
         if (state.cats.size === NewsData.categories.length) state.cats.clear();
         state.limit = PAGE;
-        saveCats();
         render();
       };
     });
