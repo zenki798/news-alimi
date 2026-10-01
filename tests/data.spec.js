@@ -19,7 +19,8 @@ test.describe('데이터 정합성', () => {
         artCount: d.articles.length,
         catKeysOk: d.categories.every(c => c.key && c.name && /^#[0-9a-f]{6}$/i.test(c.color) &&
           (c.note === undefined || (typeof c.note === 'string' && c.note.length > 0)) &&
-          (c.wide === undefined || typeof c.wide === 'boolean')),
+          (c.wide === undefined || typeof c.wide === 'boolean') &&
+          (c.rank === undefined || typeof c.rank === 'boolean')),
       };
     });
 
@@ -129,15 +130,21 @@ test.describe('데이터 정합성', () => {
     expect(bad).toEqual([]);
   });
 
-  test('실제 수집물이면 IT 칸을 한 출처가 통째로 차지하지 않는다', async ({ page }) => {
-    /* 전자신문 과학·바이오 피드가 한 시간에 14건씩 올라와 IT 칸이 전부 제약 기사가 되고,
-     * 갱신이 늦은 ZDNet 은 0건이 된 적이 있다(2026-10-01). 출처마다 건수를 나눠 막는다. */
-    const info = await page.evaluate(() => ({
-      isMock: window.NewsData.isMock,
-      sources: Array.from(new Set(window.NewsData.articles.filter(a => a.category === 'it').map(a => a.source))),
-    }));
-    test.skip(info.isMock, '목업 데이터에서는 의미 없는 검사');
-    expect(info.sources.length, 'IT 칸 출처: ' + info.sources.join(', ')).toBeGreaterThanOrEqual(2);
+  /* 'IT 칸을 한 출처가 통째로 차지하지 않는다' 는 collector.spec.js 의 피드 설정 검사로 옮겼다.
+     저장소의 뉴스 사본으로 보면 피드가 잠깐 끊긴 순간의 사본일 때 엉뚱하게 실패한다. */
+
+  test('순위 칸(많이 찾는 뉴스)은 번호가 1부터 빠짐없고, 주제·검색량이 붙어 있다', async ({ page }) => {
+    const bad = await page.evaluate(() => {
+      const d = window.NewsData;
+      return d.categories.filter(c => c.rank).map(c => {
+        const l = d.articles.filter(a => a.category === c.key).sort((x, y) => x.rank - y.rank);
+        const ranks = l.map(a => a.rank).join(',');
+        const want = l.map((_, i) => i + 1).join(',');
+        const noTopic = l.filter(a => typeof a.topic !== 'string' || !a.topic).map(a => a.id);
+        return ranks === want && !noTopic.length ? null : c.key + ': 순위 ' + ranks + ' / 주제 없음 ' + noTopic.join(',');
+      }).filter(Boolean);
+    });
+    expect(bad).toEqual([]);
   });
 
   test('실제 수집물이면 절반 이상에 요약이 있다', async ({ page }) => {

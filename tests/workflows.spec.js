@@ -109,6 +109,12 @@ test('저장소 사본(data/news.js)은 하루 한 번만 커밋하고, 커밋�
      5분마다 커밋하면 한 해 약 840MB, 하루 한 번이면 약 3MB (커밋당 약 8KB, 2026-09-30 측정). */
   const build = jobsOf(read(WF)).build;
   expect(build).toMatch(/daily=\$\(\[ "\$age" -ge 86400 \]/);
+  /* 피드 실패가 없는 차례에만 커밋한다. 실패한 순간의 사본이 남으면 그 칸이 비어 저장소의 테스트가 실패한다.
+     이틀 넘게 실패가 이어지면 그래도 커밋한다(저장소 활동이 끊기지 않게) */
+  expect(build).toMatch(/- name: RSS 수집\n\s+id: collect\n/);
+  expect(build).toContain('FAILED: ${{ steps.collect.outputs.failed }}');
+  expect(build).toContain('ok=$([ "${FAILED:-1}" = "0" ] || [ "$age" -ge 172800 ] && echo 1 || echo 0)');
+  expect(build).toContain('[ "$ok" = 1 ]');
   const step = build.slice(build.indexOf('- name: 저장소 사본 커밋'));
   expect(step).toMatch(/if: steps\.daily\.outputs\.daily == 'true'/);
   expect(step).toMatch(/continue-on-error: true/);

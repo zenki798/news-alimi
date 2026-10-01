@@ -122,6 +122,18 @@
   .col.wide ol{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px 18px}
   /* 띠의 긴 제목은 두 줄까지만. 한 건이 길어지면 띠 전체가 높아져 아래 분야 칸을 밀어낸다 */
   .col.wide li a{display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; overflow:hidden}
+  /* 맨 위 한 줄: 주요 속보(3)와 많이 찾는 뉴스(2)를 나란히. 좁으면 위아래로 쌓인다.
+     둘 다 세로 목록이다 — 속보를 가로로 나눠 놓으면 옆 순위 목록보다 짧아 아래가 비어 보였다 */
+  .dash .toprow{grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:12px; align-items:stretch}
+  .toprow .col{flex:3 1 460px; min-width:0}
+  .toprow .col.rank{flex:2 1 300px}
+  .toprow .col ol{display:flex; flex-direction:column; gap:8px}
+  /* 순위 목록: 번호 + 한 줄 제목 + "주제 · 검색량 · 언론사". 빨간색을 쓰지 않는다(속보와 구별) */
+  .col.rank ol{display:flex; flex-direction:column; gap:7px}
+  .col.rank li{display:grid; grid-template-columns:18px minmax(0,1fr); column-gap:8px; row-gap:1px}
+  .col.rank .no{grid-row:1 / 3; font-size:15px; font-weight:800; line-height:1.35; color:var(--c); font-variant-numeric:tabular-nums}
+  .col.rank li a{display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .col.rank .topic{font-size:11px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   /* 열어 둔 사이 새로 들어온 속보 표시. 깜빡이지 않는다 */
   .col .new{display:inline-block; margin-right:6px; padding:0 5px; border-radius:4px; background:var(--c); color:#fff; font-size:10.5px; font-weight:800; line-height:1.6; vertical-align:1px}
   .col .more{
@@ -167,6 +179,8 @@
   @media (max-width:560px){
     .row .cat, .row .src{display:none}
     .stats{width:100%; margin-left:0}
+    /* 좁은 화면에서는 한 줄 제목이 너무 짧게 잘린다. 순위 목록도 두 줄까지 보인다 */
+    .col.rank li a{white-space:normal; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2}
   }
 </style>
 </head>
@@ -223,9 +237,8 @@
   <button id="btnMore" hidden></button>
   <div id="empty" hidden></div>
 
-  <footer>
-    데이터 계층(<code>data/</code>)만 교체하면 실제 뉴스로 연결됩니다. 현재는 화면 골격을 위한 견본 데이터입니다.
-  </footer>
+  <!-- 견본이면 견본이라고, 실제 수집물이면 저작권·출처를 app.js 가 적는다 -->
+  <footer id="foot"></footer>
 </div>
 
 <!-- 목업이 기본값. data/news.js 가 있으면 실제 뉴스로 덮어쓴다.

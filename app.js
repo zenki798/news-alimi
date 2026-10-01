@@ -132,10 +132,16 @@
       matches(a, state.query) && (!state.unreadOnly || !state.read.has(a.id)));
   }
 
+  /** 순위가 있는 칸(rank — 많이 찾는 뉴스)은 정렬 기준과 상관없이 순위대로 둔다 */
+  function inOrder(list, cat) {
+    return cat && cat.rank ? list.slice().sort((x, y) => x.rank - y.rank) : byOrder(list);
+  }
+
   /** 카테고리까지 적용한 최종 목록 */
   function filtered() {
-    return byOrder(base().filter(a =>
-      state.category === 'all' || a.category === state.category));
+    return inOrder(base().filter(a =>
+      state.category === 'all' || a.category === state.category),
+      state.category === 'all' ? null : NewsData.category(state.category));
   }
 
   /* ---------- 렌더링 ---------- */
@@ -157,6 +163,21 @@
       up.title = new Date(NewsData.generatedAt).toLocaleString('ko-KR');
     } else {
       up.hidden = true;
+    }
+
+    /* 아래쪽 안내. 견본이면 견본이라고, 실제 수집물이면 저작권과 출처를 밝힌다.
+       예전에는 "데이터 계층만 교체하면…" 이라는 만드는 사람용 문구가 실제 뉴스 화면에도 남아 있었다. */
+    const foot = $('foot');
+    if (NewsData.isMock) {
+      foot.textContent = '견본 데이터입니다. 화면을 확인하기 위한 가상의 기사이며 실제 뉴스가 아닙니다.';
+    } else {
+      /* 순위 칸(많이 찾는 뉴스)은 기사마다 언론사가 달라 따로 적는다 */
+      const rankCat = NewsData.categories.filter(c => c.rank);
+      const srcs = Array.from(new Set(NewsData.articles
+        .filter(a => !rankCat.some(c => c.key === a.category)).map(a => a.source)));
+      foot.textContent = '기사 제목과 발췌의 저작권은 각 언론사에 있습니다. 제목을 누르면 원문으로 이동합니다. ' +
+        '출처: ' + srcs.join(', ') +
+        (rankCat.length ? '. ' + rankCat.map(c => c.name).join('·') + ': 구글 트렌드(검색량)와 각 언론사' : '') + '.';
     }
   }
 
@@ -182,34 +203,40 @@
 
   /* 예전에는 대시보드 맨 위에 "주요" 칸(분야마다 최신 기사 하나씩)을 따로 두었다. 바로 아래 주요 속보 띠와
      빨간 상자 둘이 붙어 시선이 갈렸고, 내용도 각 칸 맨 위 기사와 겹쳐서 없앴다(2026-10-01).
-     맨 위에서 눈을 끄는 것은 통신사가 급하다고 표시한 속보 띠 하나뿐이다. */
+     맨 위에서 빨갛게 눈을 끄는 것은 통신사가 급하다고 표시한 속보 띠 하나뿐이다. 그 옆의 "많이 찾는 뉴스"는
+     실제 관심도(구글 검색량) 순위라 따로 두되, 빨간색을 쓰지 않고 번호 목록으로 모양을 달리했다. */
 
   const isFresh = id => fresh.has(id) && Date.now() - fresh.get(id) < FRESH_MS && !state.read.has(id);
 
-  /* ---- 대시보드 — 카테고리를 나란히, 칼럼마다 상위 N건 ---- */
+  /* ---- 대시보드 — 카테고리를 나란히, 칼럼마다 상위 N건 ----
+     wide 칸(주요 속보·많이 찾는 뉴스)은 맨 위 한 줄(.toprow)에 나란히 선다. 넓은 화면에서 3:2 로 나누고,
+     좁으면 위아래로 쌓인다. 나머지 10칸은 그 아래 5칸씩 두 줄로 맞아떨어진다. */
   function dashboardHtml() {
     const list = base();
     const cats = state.category === 'all'
       ? NewsData.categories
       : NewsData.categories.filter(c => c.key === state.category);
 
-    const cols = cats.map(c => {
-      const mine = byOrder(list.filter(a => a.category === c.key));
+    const colHtml = c => {
+      const mine = inOrder(list.filter(a => a.category === c.key), c);
       const shown = mine.slice(0, c.wide ? bandSize() : state.perCat);
       const rest = mine.length - shown.length;
 
       const items = shown.length
         ? '<ol>' + shown.map(a =>
             '<li data-id="' + a.id + '"' + (state.read.has(a.id) ? ' class="read"' : '') + '>' +
+              /* 순위 칸: 번호 + 제목 + "주제 · 검색량 · 언론사" (시각 대신) */
+              (c.rank ? '<span class="no">' + a.rank + '</span>' : '') +
               '<a href="' + esc(a.url) + '" target="_blank" rel="noopener noreferrer">' +
-                /* 열어 둔 사이 새로 들어온 속보. 깜빡이지 않는 표시다(배터리) */
-                (c.wide && isFresh(a.id) ? '<b class="new">새</b>' : '') + esc(a.title) + '</a>' +
-              '<time>' + relTime(a.publishedAt) + '</time>' +
+                /* 열어 둔 사이 새로 들어온 속보. 깜빡이지 않는 표시다(배터리). 순위 칸은 자주 바뀌어 붙이지 않는다 */
+                (c.wide && !c.rank && isFresh(a.id) ? '<b class="new">새</b>' : '') + esc(a.title) + '</a>' +
+              (c.rank
+                ? '<span class="topic">' + esc(a.topic || '') + ' · ' + esc(a.source) + '</span>'
+                : '<time>' + relTime(a.publishedAt) + '</time>') +
             '</li>').join('') + '</ol>'
         : '<p class="none">해당 기사가 없습니다.</p>';
 
-      /* wide: 한 줄을 통째로 쓰는 띠 (주요 속보). 나머지 칸이 5칸씩 맞아떨어진다 */
-      return '<section class="col' + (c.wide ? ' wide' : '') + '" data-col="' + c.key + '" style="--c:' + c.color + '">' +
+      return '<section class="col' + (c.wide ? ' wide' : '') + (c.rank ? ' rank' : '') + '" data-col="' + c.key + '" style="--c:' + c.color + '">' +
         '<header><h3>' + esc(c.name) + '</h3><span class="n">' + mine.length + '</span></header>' +
         /* 칼럼 안내(선택) — 투자 칸의 "투자 권유 아님" 같은 것. 없는 카테고리는 아무것도 그리지 않는다 */
         (c.note ? '<p class="note">' + esc(c.note) + '</p>' : '') +
@@ -218,9 +245,11 @@
           ? '<button class="more" data-more="' + c.key + '">+' + rest + '건 더 보기</button>'
           : '') +
       '</section>';
-    }).join('');
+    };
 
-    return cols;
+    const top = cats.filter(c => c.wide);
+    return (top.length ? '<div class="toprow">' + top.map(colHtml).join('') + '</div>' : '') +
+      cats.filter(c => !c.wide).map(colHtml).join('');
   }
 
   function cardHtml(a) {
@@ -431,7 +460,7 @@
     const now = Date.now();
     NewsData.articles.forEach(a => {
       const cat = NewsData.category(a.category);
-      if (cat && cat.wide && !before.has(a.id)) fresh.set(a.id, now);
+      if (cat && cat.wide && !cat.rank && !before.has(a.id)) fresh.set(a.id, now);
     });
   }
 

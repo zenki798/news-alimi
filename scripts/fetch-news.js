@@ -35,6 +35,10 @@ const TIMEOUT_MS = 15000;
  * 목업 data/mock-news.js 의 목록과 같아야 한다(테스트가 본다). */
 const CATEGORIES = [
   { key: 'breaking',   name: '주요 속보',   color: '#ff4b4b', wide: true },
+  /* rank: 시각이 아니라 순위(rank)대로 보여 주는 칸. 맨 위 줄에서 속보 옆에 번호 목록으로 선다.
+   * "주요 뉴스" 가 아니라 "많이 찾는 뉴스" 로 부른다 — 바로 옆 "주요 속보" 와 헷갈려 시선이 갈렸던 적이 있다. */
+  { key: 'popular',    name: '많이 찾는 뉴스', color: '#e5e7eb', wide: true, rank: true,
+    note: '구글에서 지금 많이 검색되는 주제와 그 기사입니다. 검색량 순.' },
   { key: 'it',         name: 'IT·개발·AI',  color: '#5b9cff' },
   { key: 'econ',       name: '경제·증시',   color: '#2fbf71' },
   { key: 'globalecon', name: '글로벌 경제', color: '#38bdf8' },
@@ -77,6 +81,11 @@ const FEEDS = [
     category: 'breaking', source: '연합뉴스', url: 'https://www.yna.co.kr/rss/' + s + '.xml',
     titleFilter: BREAKING_WORDS, maxAgeHours: 24,
   })),
+
+  /* 많이 찾는 뉴스 — 구글 트렌드(한국) "지금 많이 검색되는 주제" 10개. 주제마다 검색량과 관련 기사(언론사 원문 주소)가 온다.
+   * 사람들이 무엇에 관심이 많은지를 보여 주는 공개 자료다. 언론사 "많이 본 뉴스" RSS 는 연합·한경 404, 뉴시스는 비어 있었고,
+   * 네이버·다음 순위는 RSS 가 없어 긁어 와야 하므로 쓰지 않는다(2026-10-01). */
+  { category: 'popular',  source: '구글 트렌드', url: 'https://trends.google.com/trending/rss?geo=KR', trends: true },
 
   /* IT — 전용 매체만 쓴다.
    * 연합 industry.xml 은 대체로 IT·과학이지만 지역·행정 기사가 섞여서 제외했다.
@@ -283,7 +292,27 @@ function fetchFeed(feed) {
   return downloads.get(feed.url);
 }
 
+/* 연결이 끊기거나 서버가 5xx 로 답하면 잠깐 쉬고 한 번 더 받는다. 전자신문은 GitHub 서버에서 가끔
+ * 연결이 끊긴다(2026-10-01, 최근 6번 중 3번 "fetch failed"). 4xx 는 다시 받아도 같으므로 바로 실패로 둔다. */
+const retryMs = () => Number(process.env.NEWS_RETRY_MS) || 3000;   // 테스트는 짧게 줄여 쓴다
 async function download(url) {
+  try {
+    return await downloadOnce(url);
+  } catch (e) {
+    if (/^HTTP 4/.test(e.message)) throw e;
+    await new Promise(r => setTimeout(r, retryMs()));
+    return downloadOnce(url);
+  }
+}
+
+/** 실패 까닭. Node fetch 는 "fetch failed" 만 말하고 진짜 까닭(ECONNRESET 등)은 cause 에 넣는다 */
+function why(e) {
+  if (!e) return '알 수 없음';
+  const c = e.cause && (e.cause.code || e.cause.message);
+  return (e.message || String(e)) + (c ? ' (' + c + ')' : '');
+}
+
+async function downloadOnce(url) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
@@ -303,8 +332,9 @@ async function download(url) {
 }
 
 function parseItems(xml, feed) {
+  if (feed.trends) return parseTrends(xml, feed);
   const blocks = xml.match(/<(item|entry)(?:\s[^>]*)?>[\s\S]*?<\/\1>/gi) || [];
-  let out = [];
+  const out = [];
 
   for (const b of blocks) {
     const title = truncate(clean(pick(b, 'title')), 120);
@@ -347,14 +377,60 @@ function parseItems(xml, feed) {
     });
   }
 
-  /* 한 칼럼을 여러 피드가 나눠 쓸 때 피드마다 건수를 정해 둔다. 무게(공시)가 큰 것, 그다음 최신 것부터 */
+  /* 한 칼럼을 여러 피드가 나눠 쓸 때 피드마다 몫(limit)을 정해 둔다. 무게(공시)가 큰 것, 그다음 최신 것부터 몫을 채운다.
+   * 몫 밖의 기사는 버리지 않고 spare(예비)로 남긴다. 다른 피드가 실패하거나 모자라면 빈자리를 채운다(fillCategories).
+   * 예전에는 잘라 버려서, 전자신문이 실패한 차례에 IT 칸이 ZDNet 몫 6건만 남았다. */
   if (feed.limit) {
-    out = out
-      .sort((a, b) => ((b.weight || 0) - (a.weight || 0)) || (new Date(b.publishedAt) - new Date(a.publishedAt)))
-      .slice(0, feed.limit);
+    out.sort((a, b) => ((b.weight || 0) - (a.weight || 0)) || (new Date(b.publishedAt) - new Date(a.publishedAt)));
+    out.forEach((a, i) => { if (i >= feed.limit) a.spare = true; });
   }
   out.forEach(a => { delete a.weight; });
   return out;
+}
+
+/**
+ * 구글 트렌드(한국) — 주제마다 검색량(ht:approx_traffic, "10000+")과 관련 기사(ht:news_item) 몇 건이 온다.
+ * 주제의 첫 기사를 올리고, 검색량이 많은 순(같으면 최근 순)으로 순위(rank)를 매긴다.
+ * 출처는 그 기사를 쓴 언론사다. 주소도 언론사 원문이다. 요약은 오지 않는다.
+ */
+function parseTrends(xml, feed) {
+  const out = [];
+  for (const b of xml.match(/<item>[\s\S]*?<\/item>/gi) || []) {
+    const topic = clean(pick(b, 'title'));
+    const news = b.match(/<ht:news_item>[\s\S]*?<\/ht:news_item>/i);
+    if (!topic || !news) continue;
+    const source = clean(pick(news[0], 'ht:news_item_source'));
+    let title = clean(pick(news[0], 'ht:news_item_title'));
+    /* 제목 끝에 "- 머니투데이" 처럼 언론사 이름이 붙어 오기도 한다. 출처 칸에 따로 있으므로 뗀다 */
+    if (source && title.endsWith(' - ' + source)) title = title.slice(0, -(source.length + 3)).trim();
+    const url = clean(pick(news[0], 'ht:news_item_url'));
+    if (!title || !/^https?:\/\//.test(url)) continue;
+
+    const traffic = Number(clean(pick(b, 'ht:approx_traffic')).replace(/[^\d]/g, '')) || 0;
+    const t = new Date(clean(pick(b, 'pubDate')));
+    out.push({
+      category: feed.category,
+      source: source || feed.source,
+      title: truncate(title, 120),
+      summary: '',
+      url,
+      publishedAt: isNaN(t.getTime()) ? new Date().toISOString() : t.toISOString(),
+      topic: topic + ' · 검색 ' + trafficLabel(traffic),
+      keywords: [topic],
+      points: [],
+      traffic,
+    });
+  }
+  out.sort((a, b) => (b.traffic - a.traffic) || (new Date(b.publishedAt) - new Date(a.publishedAt)));
+  out.forEach((a, i) => { a.rank = i + 1; delete a.traffic; });
+  return out;
+}
+
+/** 10000 → "1만+", 2000 → "2천+", 500 → "500+" (구글이 주는 어림값이다) */
+function trafficLabel(n) {
+  if (n >= 10000) return (n / 10000) + '만+';
+  if (n >= 1000) return (n / 1000) + '천+';
+  return n + '+';
 }
 
 /**
@@ -444,11 +520,37 @@ function makeId(a, i) {
   return a.category + '-' + tail.replace(/[^A-Za-z0-9._-]/g, '').slice(-40);
 }
 
+/**
+ * 기사를 칸에 나눠 담는다. 칸마다 PER_CATEGORY 건까지.
+ * 몫 안의 기사(spare 가 아닌 것)를 최신 순으로 먼저 담고, 남는 자리를 몫 밖의 기사로 채운다.
+ * 중복을 지울 때도 몫 안의 것을 남긴다. 순위가 있는 칸(rank)은 순위대로 놓고 번호를 1부터 다시 매긴다.
+ */
+function fillCategories(list) {
+  const byCat = {};
+  CATEGORIES.forEach(c => { byCat[c.key] = []; });
+  const newest = (a, b) => new Date(b.publishedAt) - new Date(a.publishedAt);
+
+  dedupeWithin(list.slice().sort((a, b) => (Number(!!a.spare) - Number(!!b.spare)) || newest(a, b)))
+    .forEach(a => {
+      if (byCat[a.category] && byCat[a.category].length < PER_CATEGORY) byCat[a.category].push(a);
+    });
+
+  CATEGORIES.forEach(c => {
+    const l = byCat[c.key];
+    l.forEach(a => { delete a.spare; });
+    if (c.rank) l.sort((a, b) => a.rank - b.rank).forEach((a, i) => { a.rank = i + 1; });
+    else l.sort(newest);
+  });
+  return byCat;
+}
+
 async function main() {
   const results = await Promise.allSettled(FEEDS.map(async f => {
     const xml = await fetchFeed(f);
     const items = parseItems(xml, f);
-    console.log('  ok   ' + f.category.padEnd(9) + f.source.padEnd(12) + items.length + '건  ' + f.url);
+    const spare = items.filter(a => a.spare).length;
+    console.log('  ok   ' + f.category.padEnd(9) + f.source.padEnd(12) + (items.length - spare) + '건' +
+      (spare ? ' (+예비 ' + spare + ')' : '') + '  ' + f.url);
     return items;
   }));
 
@@ -459,7 +561,7 @@ async function main() {
     else {
       failed++;
       console.warn('  FAIL ' + FEEDS[i].category.padEnd(9) + FEEDS[i].source.padEnd(12) +
-        (r.reason && r.reason.message ? r.reason.message : r.reason) + '  ' + FEEDS[i].url);
+        why(r.reason) + '  ' + FEEDS[i].url);
     }
   });
 
@@ -469,14 +571,7 @@ async function main() {
     process.exit(1);
   }
 
-  const byCat = {};
-  CATEGORIES.forEach(c => { byCat[c.key] = []; });
-
-  dedupeWithin(collected)
-    .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
-    .forEach(a => {
-      if (byCat[a.category] && byCat[a.category].length < PER_CATEGORY) byCat[a.category].push(a);
-    });
+  const byCat = fillCategories(collected);
 
   assignImportance(byCat);
 
@@ -522,6 +617,10 @@ async function main() {
   const dest = path.join(__dirname, '..', 'data', 'news.js');
   fs.writeFileSync(dest, out, 'utf8');
 
+  /* Actions 에 실패한 피드 수를 알린다. 저장소 사본은 실패 없는 차례에만 하루 한 번 커밋한다(fetch-news.yml).
+   * 실패한 순간의 사본이 저장소에 남으면 그 칸이 비거나 한 출처만 남아 저장소의 테스트가 실패한다. */
+  if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, 'failed=' + failed + '\n');
+
   const perCat = CATEGORIES.map(c => c.name + ' ' + byCat[c.key].length).join(' / ');
   console.log('\n수집 완료: 총 ' + articles.length + '건 (피드 실패 ' + failed + '개)');
   console.log('카테고리별: ' + perCat);
@@ -538,5 +637,6 @@ if (require.main === module) {
 
 module.exports = {
   clean, decodeEntities, stripByline, scrubSummary, spaceSentences, articleNo, canonicalUrl, parseItems,
-  dedupeWithin, makeId, CATEGORIES, FEEDS, PER_CATEGORY, GLOBAL_ECON_WORDS, BREAKING_WORDS,
+  parseTrends, trafficLabel, fillCategories, dedupeWithin, makeId, why, download,
+  CATEGORIES, FEEDS, PER_CATEGORY, GLOBAL_ECON_WORDS, BREAKING_WORDS,
 };

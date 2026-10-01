@@ -32,6 +32,8 @@
   /* scripts/fetch-news.js 의 CATEGORIES 와 같아야 한다 (tests/collector.spec.js 가 비교한다) */
   const CATEGORIES = [
     { key: 'breaking',   name: '주요 속보',   color: '#ff4b4b', wide: true },
+    { key: 'popular',    name: '많이 찾는 뉴스', color: '#e5e7eb', wide: true, rank: true,
+      note: '구글에서 지금 많이 검색되는 주제와 그 기사입니다. 검색량 순.' },
     { key: 'it',         name: 'IT·개발·AI',  color: '#5b9cff' },
     { key: 'econ',       name: '경제·증시',   color: '#2fbf71' },
     { key: 'globalecon', name: '글로벌 경제', color: '#38bdf8' },
@@ -47,6 +49,27 @@
 
   /* 견본 기사. 실제 사건이 아니다. */
   const RAW = [
+    /* ---------- 많이 찾는 뉴스 ----------
+       실제 수집물처럼 순위(rank)와 "주제 · 검색량"(topic)이 붙는다. 요약은 없다 */
+    {
+      id: 'pop-01', category: 'popular', source: '견본일보', importance: 3, minutesAgo: 15, rank: 1,
+      topic: '단풍 절정 · 검색 1만+', title: '올가을 단풍 절정 다음 주…지역별 예상 시기',
+      summary: '', keywords: ['단풍'],
+      url: 'https://example.com/news/pop-01',
+    },
+    {
+      id: 'pop-02', category: 'popular', source: '가상경제', importance: 2, minutesAgo: 50, rank: 2,
+      topic: '배당주 · 검색 5천+', title: '찬바람 불면 배당주? 연말 배당 일정 정리',
+      summary: '', keywords: ['배당'],
+      url: 'https://example.com/news/pop-02',
+    },
+    {
+      id: 'pop-03', category: 'popular', source: '견본스포츠', importance: 1, minutesAgo: 90, rank: 3,
+      topic: '아시아선수권 · 검색 2천+', title: '대표팀 결승 상대 확정…경기 일정은',
+      summary: '', keywords: ['스포츠'],
+      url: 'https://example.com/news/pop-03',
+    },
+
     /* ---------- 주요 속보 ----------
        실제 수집물처럼 통신사의 [속보] 표시가 붙은 제목만 두고, 요약은 비운다 (속보는 제목만 먼저 나온다) */
     {

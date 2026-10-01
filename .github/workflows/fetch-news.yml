@@ -88,6 +88,7 @@ jobs:
           node-version: '20'
 
       - name: RSS 수집
+        id: collect
         run: node scripts/fetch-news.js
 
       - uses: actions/configure-pages@v5
@@ -106,11 +107,16 @@ jobs:
 
       - name: 하루 한 번·한 시간에 한 번 할 일인가
         id: daily
+        env:
+          FAILED: ${{ steps.collect.outputs.failed }}
         run: |
           last=$(git log -1 --format=%ct -- data/news.js)
           age=$(( $(date +%s) - ${last:-0} ))
-          echo "저장소 사본은 $((age / 3600))시간 $((age % 3600 / 60))분 전에 커밋했다."
-          echo "daily=$([ "$age" -ge 86400 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "저장소 사본은 $((age / 3600))시간 $((age % 3600 / 60))분 전에 커밋했다. 이번 차례 피드 실패: ${FAILED:-?}개"
+          # 저장소 사본은 하루 한 번, 피드 실패가 없는 차례에 커밋한다. 실패한 순간의 사본이 남으면 그 칸이 비거나
+          # 한 출처만 남아 저장소의 테스트가 실패한다. 이틀 넘게 실패가 이어지면 그래도 커밋한다(저장소 활동이 끊기지 않게).
+          ok=$([ "${FAILED:-1}" = "0" ] || [ "$age" -ge 172800 ] && echo 1 || echo 0)
+          echo "daily=$([ "$age" -ge 86400 ] && [ "$ok" = 1 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
           # 약 5분마다 도므로 매시 0~4분에 시작한 차례가 대개 한 시간에 한 번이다.
           # 어느 시간에 건너뛰거나 두 번 돌아도 괜찮다 — 다음 차례가 남은 것을 지우고, 두 번째는 지울 게 거의 없다.
           echo "hourly=$([ "$((10#$(date -u +%M)))" -lt 5 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"

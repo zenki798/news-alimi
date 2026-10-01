@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const {
   clean, stripByline, scrubSummary, spaceSentences, parseItems, dedupeWithin, makeId,
+  parseTrends, trafficLabel, fillCategories, why, download,
   CATEGORIES, FEEDS, PER_CATEGORY, GLOBAL_ECON_WORDS, BREAKING_WORDS,
 } = require('../scripts/fetch-news');
 
@@ -125,7 +126,7 @@ function kindItem(market, company, name, time) {
     '<author><![CDATA[[' + market + ']' + company + ']]></author><category>수시공시</category></item>';
 }
 
-test('공시는 중요한 종류만 골라 쉬운 이름과 풀이를 붙이고, 무게가 큰 것부터 건수를 지킨다', () => {
+test('공시는 중요한 종류만 골라 쉬운 이름과 풀이를 붙이고, 무게가 큰 것부터 몫(limit)을 채우고 나머지는 예비로 둔다', () => {
   const xml = '<rss><channel>' +
     kindItem('코', '견본전자', '임원ㆍ주요주주특정증권등소유상황보고서', '11:00') +   // 가장 최근이지만 무게 1
     kindItem('코', '견본전자', '주식등의대량보유상황보고서(일반)', '10:30') +
@@ -137,12 +138,15 @@ test('공시는 중요한 종류만 골라 쉬운 이름과 풀이를 붙이고,
 
   const out = parseItems(xml, { category: 'invest', source: '한국거래소 공시', disclosure: true, limit: 3 });
 
-  expect(out.map(a => a.title)).toEqual([
+  const kept = out.filter(a => !a.spare);
+  expect(kept.map(a => a.title)).toEqual([
     '[공시] 가상화학 · 최대주주 변경',
     '[공시] 견본중공업 · 배당 결정',
     '[공시] 견본전자 · 5% 이상 지분 신고',
   ]);
-  const top = out[0];
+  /* 몫 밖의 것은 버리지 않고 예비로 남긴다 — 다른 피드가 실패하면 빈자리를 채운다 */
+  expect(out.filter(a => a.spare).map(a => a.title)).toEqual(['[공시] 견본전자 · 임원·대주주 지분 변동']);
+  const top = kept[0];
   /* 요약은 비운다 — 요약이 있으면 카테고리 대표(주요) 자리를 공시가 차지한다 */
   expect(top.summary).toBe('');
   expect(top.points[0]).toContain('최대주주');
@@ -194,4 +198,121 @@ test('목업 데이터의 카테고리가 수집기와 같다', () => {
   const fake = {};
   new Function('window', fs.readFileSync(path.join(__dirname, '..', 'data', 'mock-news.js'), 'utf8'))(fake);
   expect(fake.NewsData.categories).toEqual(CATEGORIES);
+});
+
+/* ---------- 피드가 실패해도 칸이 비지 않게 (2026-10-01 전자신문이 GitHub 서버에서 가끔 끊김) ---------- */
+
+/** 칸 채우기용 견본 기사. n 분 전 발행 */
+const art = (category, source, n, spare) => Object.assign(
+  { category, source, title: source + ' ' + n, url: 'https://example.com/' + source + '/' + n,
+    publishedAt: new Date(Date.UTC(2026, 9, 1, 12) - n * 60000).toISOString() },
+  spare ? { spare: true } : {});
+
+test('한 출처가 실패하면 다른 출처의 예비 기사로 빈자리를 채운다', () => {
+  /* ZDNet 몫 6 + 예비 14. 전자신문은 실패해서 없다 */
+  const zd = Array.from({ length: 20 }, (_, i) => art('it', 'ZDNet', i + 1, i >= 6));
+  const it = fillCategories(zd).it;
+  expect(it).toHaveLength(PER_CATEGORY);                       // 예전에는 몫 6건만 남았다
+  expect(it.every(a => !('spare' in a))).toBe(true);
+});
+
+test('모든 출처가 살아 있으면 몫대로 나눠 담고 예비는 쓰지 않는다', () => {
+  /* 예비 기사가 더 최신이어도 몫 안의 기사가 먼저다 */
+  const list = []
+    .concat(Array.from({ length: 10 }, (_, i) => art('it', 'ZDNet', i + 30, i >= 6)))
+    .concat(Array.from({ length: 6 }, (_, i) => art('it', '전자신문03', i + 1, i >= 4)))
+    .concat(Array.from({ length: 6 }, (_, i) => art('it', '전자신문04', i + 10, i >= 4)));
+  const it = fillCategories(list).it;
+  const n = src => it.filter(a => a.source === src).length;
+  expect([n('ZDNet'), n('전자신문03'), n('전자신문04')]).toEqual([6, 4, 4]);
+  /* 칸 안에서는 최신 순 */
+  expect(it.map(a => a.publishedAt)).toEqual(it.map(a => a.publishedAt).slice().sort().reverse());
+});
+
+test('같은 기사가 몫 안과 예비에 함께 있으면 몫 안의 것을 남긴다', () => {
+  const a = art('it', 'ZDNet', 5, false);
+  const b = Object.assign({}, a, { spare: true });
+  expect(fillCategories([b, a]).it).toHaveLength(1);
+});
+
+test('IT 칸은 출처가 둘 이상이고, 출처마다 몫을 나눠 한 출처가 칸을 통째로 차지하지 못한다', () => {
+  /* 전자신문 과학·바이오 피드가 한 시간에 14건씩 올라와 IT 칸이 전부 제약 기사가 된 적이 있다.
+   * 예전에는 저장소의 뉴스 사본으로 검사해서, 피드가 잠깐 끊긴 순간의 사본이면 엉뚱하게 실패했다. 설정으로 본다. */
+  const feeds = FEEDS.filter(f => f.category === 'it');
+  expect(new Set(feeds.map(f => f.source)).size).toBeGreaterThanOrEqual(2);
+  feeds.forEach(f => expect(f.limit, f.url).toBeGreaterThan(0));
+  const bySrc = {};
+  feeds.forEach(f => { bySrc[f.source] = (bySrc[f.source] || 0) + f.limit; });
+  Object.entries(bySrc).forEach(([src, n]) => expect(n, src + ' 의 몫').toBeLessThan(PER_CATEGORY));
+});
+
+test('연결이 끊기면 한 번 더 받고, 4xx 는 다시 받지 않는다. 실패 까닭(ECONNRESET 등)을 남긴다', async () => {
+  const real = global.fetch;
+  process.env.NEWS_RETRY_MS = '5';
+  let calls = 0;
+  try {
+    global.fetch = async () => {
+      calls++;
+      if (calls === 1) throw new TypeError('fetch failed', { cause: { code: 'ECONNRESET' } });
+      return { ok: true, status: 200, text: async () => '<rss/>' };
+    };
+    expect(await download('https://example.com/a.xml')).toBe('<rss/>');
+    expect(calls).toBe(2);
+
+    calls = 0;
+    global.fetch = async () => { calls++; return { ok: false, status: 404, text: async () => '' }; };
+    await expect(download('https://example.com/b.xml')).rejects.toThrow('HTTP 404');
+    expect(calls).toBe(1);
+  } finally {
+    global.fetch = real;
+    delete process.env.NEWS_RETRY_MS;
+  }
+  expect(why(new TypeError('fetch failed', { cause: { code: 'ECONNRESET' } }))).toBe('fetch failed (ECONNRESET)');
+  expect(why(new Error('HTTP 503'))).toBe('HTTP 503');
+});
+
+/* ---------- 많이 찾는 뉴스 (구글 트렌드) ---------- */
+
+/** 구글 트렌드 RSS 항목 모양 (주제·검색량·관련 기사) */
+function trendItem(topic, traffic, minutesAgo, newsTitle, source, url) {
+  return '<item><title>' + topic + '</title><ht:approx_traffic>' + traffic + '</ht:approx_traffic>' +
+    '<description/><link>https://trends.google.com/trending/rss?geo=KR</link>' +
+    '<pubDate>' + new Date(Date.UTC(2026, 9, 1, 8) - minutesAgo * 60000).toUTCString() + '</pubDate>' +
+    '<ht:news_item><ht:news_item_title>' + newsTitle + '</ht:news_item_title><ht:news_item_snippet/>' +
+    '<ht:news_item_url>' + url + '</ht:news_item_url><ht:news_item_source>' + source + '</ht:news_item_source></ht:news_item>' +
+    '<ht:news_item><ht:news_item_title>둘째 기사</ht:news_item_title><ht:news_item_url>https://example.com/second</ht:news_item_url>' +
+    '<ht:news_item_source>다른신문</ht:news_item_source></ht:news_item></item>';
+}
+
+test('구글 트렌드: 검색량 순으로 순위를 매기고, 주제의 첫 기사를 언론사 원문 주소로 올린다', () => {
+  const xml = '<rss xmlns:ht="https://trends.google.com/trending/rss"><channel>' +
+    trendItem('단풍', '500+', 10, '단풍 절정 다음 주', '견본일보', 'https://example.com/n1') +
+    trendItem('배당', '10000+', 30, '&apos;찬바람 불면 배당주&apos; 올해도 - 가상경제', '가상경제', 'https://example.com/n2') +
+    trendItem('코스피', '2000+', 5, '코스피 급락 원인은', '견본방송', 'https://example.com/n3') +
+    trendItem('대학 순위', '2000+', 20, '세계 대학 순위 발표', '견본대학신문', 'https://example.com/n4') +
+    '</channel></rss>';
+  const out = parseItems(xml, { category: 'popular', source: '구글 트렌드', trends: true });
+
+  /* 검색량이 많은 순, 같으면 최근 것이 앞 */
+  expect(out.map(a => [a.rank, a.keywords[0]])).toEqual([[1, '배당'], [2, '코스피'], [3, '대학 순위'], [4, '단풍']]);
+  const top = out[0];
+  expect(top.title).toBe("'찬바람 불면 배당주' 올해도");          // 끝의 "- 언론사" 를 떼고, &apos; 를 푼다
+  expect(top.source).toBe('가상경제');                             // 출처는 기사를 쓴 언론사
+  expect(top.url).toBe('https://example.com/n2');                  // 언론사 원문 주소
+  expect(top.topic).toBe('배당 · 검색 1만+');
+  expect(top.summary).toBe('');
+  expect(out.every(a => !('traffic' in a))).toBe(true);
+});
+
+test('검색량 어림값을 읽기 쉽게 적는다', () => {
+  expect([500, 1000, 2000, 5000, 10000, 20000, 100000, 1000000].map(trafficLabel))
+    .toEqual(['500+', '1천+', '2천+', '5천+', '1만+', '2만+', '10만+', '100만+']);
+});
+
+test('순위 칸은 칸에 담은 뒤 번호를 1부터 빠짐없이 다시 매긴다 (중복이 빠져도)', () => {
+  const p = (rank, url) => ({ category: 'popular', source: 's', title: 't' + rank, url, rank,
+    publishedAt: '2026-10-01T00:00:00.000Z' });
+  /* 2위와 3위가 같은 기사라 하나가 빠진다 */
+  const out = fillCategories([p(1, 'https://e.com/1'), p(2, 'https://e.com/x'), p(3, 'https://e.com/x'), p(4, 'https://e.com/4')]).popular;
+  expect(out.map(a => [a.rank, a.url])).toEqual([[1, 'https://e.com/1'], [2, 'https://e.com/x'], [3, 'https://e.com/4']]);
 });

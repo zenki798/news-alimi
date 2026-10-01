@@ -182,7 +182,9 @@ test.describe('주요 속보 띠', () => {
     await open(page);
 
     await expect(page.locator('#headline')).toHaveCount(0);
-    await expect(page.locator('#list .col.wide')).toHaveCount(1);
+    /* 맨 위 줄은 속보 띠와 많이 찾는 뉴스(번호 목록, 빨간색 아님) 둘뿐이고, 빨간 띠는 하나다 */
+    await expect(page.locator('#list .toprow .col')).toHaveCount(2);
+    await expect(page.locator('#list .col.wide:not(.rank)')).toHaveCount(1);
     await expect(page.locator('#list .col').first()).toHaveClass(/wide/);
 
     /* 카드 보기의 "주요" 딱지도 같은 규칙(분야마다 최신 기사)에서 나와 속보와 헷갈렸다 */
@@ -196,10 +198,10 @@ test.describe('주요 속보 띠', () => {
     await inflate(page, 300);
     const want = page.viewportSize().width <= 560 ? 3 : 5;
 
-    for (const per of ['3', '10']) {
+    for (const [per, key] of [['3', 'breaking'], ['10', 'breaking'], ['3', 'popular'], ['10', 'popular']]) {
       await page.locator('#perCat').selectOption(per);
-      const band = page.locator('#list .col.wide');
-      await expect(band.locator('li[data-id]'), '칼럼당 ' + per + '건일 때').toHaveCount(want);
+      const band = page.locator('#list .col.wide[data-col="' + key + '"]');
+      await expect(band.locator('li[data-id]'), key + ', 칼럼당 ' + per + '건일 때').toHaveCount(want);
       /* 다 못 보인 만큼 "더 보기" 로 넘긴다 */
       const total = Number(await band.locator('header .n').textContent());
       await expect(band.locator('.more')).toHaveText('+' + (total - want) + '건 더 보기');
@@ -214,7 +216,7 @@ test.describe('주요 속보 띠', () => {
       top.title = '[속보] ' + '아주 긴 속보 제목이 이어진다 '.repeat(20);
       window.__app.render();
     });
-    const h = await page.locator('#list .col.wide li a').first().evaluate(el => {
+    const h = await page.locator('#list .col.wide[data-col="breaking"] li a').first().evaluate(el => {
       const s = getComputedStyle(el);
       return { height: el.getBoundingClientRect().height, line: parseFloat(s.lineHeight) };
     });

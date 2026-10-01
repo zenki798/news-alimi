@@ -136,7 +136,7 @@ test.describe('화면과 조작', () => {
     }
   });
 
-  test('주요 속보는 대시보드 맨 위에서 한 줄을 통째로 쓴다', async ({ page }) => {
+  test('맨 위 한 줄에 주요 속보와 많이 찾는 뉴스가 선다 — 넓으면 나란히(3:2), 좁으면 위아래', async ({ page }) => {
     await open(page);
 
     const first = page.locator('#list .col').first();
@@ -144,9 +144,19 @@ test.describe('화면과 조작', () => {
     await expect(first).toHaveClass(/wide/);
     await expect(first.locator('h3')).toHaveText('주요 속보');
 
+    /* 맨 위 줄은 목록 폭을 다 쓴다 */
     const list = await page.locator('#list').boundingBox();
+    const top = await page.locator('#list .toprow').boundingBox();
+    expect(Math.abs(top.width - list.width), '맨 위 줄 폭 ' + top.width + ' / 목록 폭 ' + list.width).toBeLessThanOrEqual(2);
+
     const band = await first.boundingBox();
-    expect(Math.abs(band.width - list.width), '띠 폭 ' + band.width + ' / 목록 폭 ' + list.width).toBeLessThanOrEqual(2);
+    const rank = await page.locator('#list .toprow .col.rank').boundingBox();
+    if (page.viewportSize().width >= 1200) {
+      expect(Math.abs(band.y - rank.y), '같은 줄').toBeLessThanOrEqual(1);
+      expect(band.width, '속보가 더 넓다').toBeGreaterThan(rank.width);
+    } else {
+      expect(rank.y, '좁은 화면에서는 속보 아래').toBeGreaterThan(band.y + band.height - 1);
+    }
 
     /* 넓은 화면에서는 나머지 10칸이 5칸씩 두 줄로 맞아떨어진다 (11칸이면 마지막 줄에 한 칸만 남는다) */
     if (page.viewportSize().width >= 1200) {
@@ -154,6 +164,41 @@ test.describe('화면과 조작', () => {
       const rows = {};
       tops.forEach(t => { rows[t] = (rows[t] || 0) + 1; });
       expect(Object.values(rows)).toEqual([5, 5]);
+    }
+  });
+
+  test('많이 찾는 뉴스는 번호 순서대로, 주제·검색량·언론사와 함께 보인다 (빨간색을 쓰지 않는다)', async ({ page }) => {
+    await open(page);
+    const box = page.locator('#list .col.rank');
+    const nos = await box.locator('li .no').allTextContents();
+    expect(nos.length).toBeGreaterThan(0);
+    expect(nos).toEqual(nos.map((_, i) => String(i + 1)));
+    await expect(box.locator('li .topic').first()).toContainText('검색');
+    /* 순위는 시각이 아니라 관심도다. "새" 표시도 붙이지 않는다 (자주 바뀌어 시끄럽다) */
+    await expect(box.locator('time')).toHaveCount(0);
+    await expect(box.locator('.new')).toHaveCount(0);
+    const red = await box.evaluate(el => getComputedStyle(el).getPropertyValue('--c').trim());
+    expect(red.toLowerCase()).not.toBe('#ff4b4b');
+
+    /* 칩으로 고르면 카드에서도 순위대로 */
+    await setView(page, 'card');
+    await page.locator('#chips .chip[data-cat="popular"]').click();
+    const ranks = await page.evaluate(() => window.__app.filtered().map(a => a.rank));
+    expect(ranks).toEqual(ranks.slice().sort((x, y) => x - y));
+  });
+
+  test('아래쪽 안내: 견본이면 견본이라고, 실제 수집물이면 저작권·출처를 밝힌다', async ({ page }) => {
+    await open(page);
+    const foot = page.locator('#foot');
+    /* 예전에는 실제 뉴스 화면에도 "데이터 계층만 교체하면… 견본 데이터입니다" 가 남아 있었다 */
+    await expect(foot).not.toContainText('데이터 계층');
+    if (await page.evaluate(() => window.NewsData.isMock)) {
+      await expect(foot).toContainText('견본 데이터');
+    } else {
+      await expect(foot).not.toContainText('견본');
+      await expect(foot).toContainText('저작권은 각 언론사');
+      const src = await page.evaluate(() => window.NewsData.articles.find(a => a.category === 'breaking').source);
+      await expect(foot).toContainText(src);
     }
   });
 
