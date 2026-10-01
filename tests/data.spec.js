@@ -129,6 +129,17 @@ test.describe('데이터 정합성', () => {
     expect(bad).toEqual([]);
   });
 
+  test('실제 수집물이면 IT 칸을 한 출처가 통째로 차지하지 않는다', async ({ page }) => {
+    /* 전자신문 과학·바이오 피드가 한 시간에 14건씩 올라와 IT 칸이 전부 제약 기사가 되고,
+     * 갱신이 늦은 ZDNet 은 0건이 된 적이 있다(2026-10-01). 출처마다 건수를 나눠 막는다. */
+    const info = await page.evaluate(() => ({
+      isMock: window.NewsData.isMock,
+      sources: Array.from(new Set(window.NewsData.articles.filter(a => a.category === 'it').map(a => a.source))),
+    }));
+    test.skip(info.isMock, '목업 데이터에서는 의미 없는 검사');
+    expect(info.sources.length, 'IT 칸 출처: ' + info.sources.join(', ')).toBeGreaterThanOrEqual(2);
+  });
+
   test('실제 수집물이면 절반 이상에 요약이 있다', async ({ page }) => {
     const info = await page.evaluate(() => ({
       isMock: window.NewsData.isMock,

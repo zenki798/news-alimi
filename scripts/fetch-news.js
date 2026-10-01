@@ -80,9 +80,13 @@ const FEEDS = [
 
   /* IT — 전용 매체만 쓴다.
    * 연합 industry.xml 은 대체로 IT·과학이지만 지역·행정 기사가 섞여서 제외했다.
-   * (실제로 "해경청 체력증진 프로그램"이 IT 칸에 올라왔다) */
-  { category: 'it',       source: 'ZDNet Korea', url: 'https://feeds.feedburner.com/zdkorea' },
-  { category: 'it',       source: '전자신문',    url: 'https://rss.etnews.com/20.xml' },
+   * (실제로 "해경청 체력증진 프로그램"이 IT 칸에 올라왔다)
+   * 전자신문 피드는 이름 없이 번호만 있다. 20 은 과학·의료·바이오라 뺐다 — 한 시간에 14건씩 올라오는
+   * 제약 기사가 IT 칸을 통째로 차지했다(2026-10-01). 내용을 보고 03(통신·인터넷·게임)·04(SW·보안)를 골랐다.
+   * 출처마다 건수(limit)를 나눈다. ZDNet 피드는 두 시간가량 늦게 갱신돼 최신순으로만 뽑으면 0건이 된다. */
+  { category: 'it',       source: 'ZDNet Korea', url: 'https://feeds.feedburner.com/zdkorea', limit: 6 },
+  { category: 'it',       source: '전자신문',    url: 'https://rss.etnews.com/03.xml', limit: 4 },  // 통신·인터넷·게임
+  { category: 'it',       source: '전자신문',    url: 'https://rss.etnews.com/04.xml', limit: 4 },  // SW·보안 (지자체 인사가 가끔 섞인다)
   /* 한국경제 it 피드는 이름만 IT 다. 실제로는 바이오·제약·건강·연예가 대부분이라 뺐다.
    * ("담배 끊어도 이것 쓰면 심혈관질환 위험 70%" 가 IT 대표 기사로 올라왔다) */
 

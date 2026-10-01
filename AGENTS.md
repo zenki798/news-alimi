@@ -140,6 +140,8 @@ data/news.js                       자동 생성물(저장소 사본, 하루 한
 |---|---|
 | `yna.co.kr/rss/it.xml` | 404 (존재하지 않음) |
 | `hankyung.com/feed/it` | 이름만 IT. 실제로는 바이오·제약·건강·연예가 대부분 → 제외 |
+| `rss.etnews.com/20.xml` | 번호만 있는 피드. 실제로는 과학·의료·바이오 → 제약 기사가 IT 칸 14칸을 통째로 차지함(2026-10-01). 03(통신·인터넷·게임)·04(SW·보안)로 교체. 04 에는 지자체 인사가 가끔 섞인다 |
+| `feeds.feedburner.com/zdkorea` | 갱신이 두 시간가량 늦다 → 최신순으로만 뽑으면 0건. IT 칸은 출처마다 `limit` 을 나눈다 |
 | `yna.co.kr/rss/industry.xml` | 대체로 IT·과학이지만 지역·행정 기사가 섞임 → 제외 |
 | `hankyung.com/feed/realestate` | description 을 **전혀 주지 않음**. 제목만 보조로 사용 |
 | `mk.co.kr/rss/...` | 403 차단 |
