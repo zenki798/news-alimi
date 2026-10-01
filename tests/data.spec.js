@@ -17,7 +17,9 @@ test.describe('데이터 정합성', () => {
         hasCategoryFn: typeof d.category === 'function',
         catCount: d.categories.length,
         artCount: d.articles.length,
-        catKeysOk: d.categories.every(c => c.key && c.name && /^#[0-9a-f]{6}$/i.test(c.color)),
+        catKeysOk: d.categories.every(c => c.key && c.name && /^#[0-9a-f]{6}$/i.test(c.color) &&
+          (c.note === undefined || (typeof c.note === 'string' && c.note.length > 0)) &&
+          (c.wide === undefined || typeof c.wide === 'boolean')),
       };
     });
 
@@ -95,11 +97,35 @@ test.describe('데이터 정합성', () => {
   });
 
   test('요약에 통신사 머리말이 남아 있지 않다', async ({ page }) => {
-    /* "(서울=연합뉴스) 홍길동 기자 = " 를 떼지 않으면 짧은 요약 자리를 통째로 잡아먹는다. */
+    /* "(서울=연합뉴스) 홍길동 기자 = " 를 떼지 않으면 짧은 요약 자리를 통째로 잡아먹는다.
+     * 뉴시스는 "[서울=뉴시스] 홍길동 김철수 기자 = " 로 괄호 모양이 다르고 이름이 여럿 붙는다. */
     const bad = await page.evaluate(() =>
       window.NewsData.articles
-        .filter(a => /^\([^)]{2,40}\)\s*\S{0,25}?(기자|특파원|통신원)\s*=/.test(a.summary))
+        .filter(a => /^[(\[][^)\]]{2,40}[)\]]\s*[^=]{0,25}?(기자|특파원|통신원)\s*=/.test(a.summary))
         .map(a => a.id + ' :: ' + a.summary.slice(0, 50)));
+    expect(bad).toEqual([]);
+  });
+
+  test('제목·요약·풀이에 이메일 주소가 없다 (저장소에 커밋되는 파일이다)', async ({ page }) => {
+    /* 뉴시스는 요약 끝에 기자 이메일을 붙여 보낸다. 수집기가 지우지 못하면 data/news.js 로 커밋된다 (AGENTS.md 2항) */
+    const bad = await page.evaluate(() =>
+      window.NewsData.articles
+        .filter(a => /[\w.+-]+@[\w-]+\.[\w.-]+/.test([a.title, a.summary].concat(a.points, a.keywords).join(' ')))
+        .map(a => a.id));
+    expect(bad).toEqual([]);
+  });
+
+  test('주요 속보 칸에는 속보 표시가 붙은 하루 안의 기사만 있다', async ({ page }) => {
+    const bad = await page.evaluate(() => {
+      const d = window.NewsData;
+      /* 수집 시각을 기준으로 본다. 저장소 사본은 며칠 뒤에 열어 볼 수도 있다.
+       * 수집기는 피드를 읽을 때 나이를 재고 generatedAt 은 끝날 때 찍으므로 10분 여유를 둔다 */
+      const base = d.generatedAt ? new Date(d.generatedAt).getTime() : Date.now();
+      return d.articles.filter(a => a.category === 'breaking')
+        .filter(a => !/^\s*[\[<]\s*(속보|1보|긴급)\s*[\]>]/.test(a.title) ||
+          base - new Date(a.publishedAt).getTime() > 24 * 3600000 + 10 * 60000)
+        .map(a => a.id + ' :: ' + a.title.slice(0, 40) + ' @ ' + a.publishedAt);
+    });
     expect(bad).toEqual([]);
   });
 

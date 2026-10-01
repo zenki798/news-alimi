@@ -123,6 +123,75 @@ test.describe('화면과 조작', () => {
     }
   });
 
+  test('안내(note)가 있는 칼럼에만 안내 문구가 붙는다 (투자: 투자 권유 아님)', async ({ page }) => {
+    await open(page);
+
+    const cats = await page.evaluate(() => window.NewsData.categories.map(c => ({ key: c.key, note: c.note || '' })));
+    expect(cats.find(c => c.key === 'invest').note).toContain('투자 권유가 아닙니다');
+
+    for (const c of cats) {
+      const note = page.locator('.col[data-col="' + c.key + '"] .note');
+      if (c.note) await expect(note, c.key).toHaveText(c.note);
+      else await expect(note, c.key).toHaveCount(0);
+    }
+  });
+
+  test('주요 속보는 대시보드 맨 위에서 한 줄을 통째로 쓴다', async ({ page }) => {
+    await open(page);
+
+    const first = page.locator('#list .col').first();
+    await expect(first).toHaveAttribute('data-col', 'breaking');
+    await expect(first).toHaveClass(/wide/);
+    await expect(first.locator('h3')).toHaveText('주요 속보');
+
+    const list = await page.locator('#list').boundingBox();
+    const band = await first.boundingBox();
+    expect(Math.abs(band.width - list.width), '띠 폭 ' + band.width + ' / 목록 폭 ' + list.width).toBeLessThanOrEqual(2);
+
+    /* 넓은 화면에서는 나머지 10칸이 5칸씩 두 줄로 맞아떨어진다 (11칸이면 마지막 줄에 한 칸만 남는다) */
+    if (page.viewportSize().width >= 1200) {
+      const tops = await page.locator('#list .col:not(.wide)').evaluateAll(els => els.map(e => Math.round(e.getBoundingClientRect().top)));
+      const rows = {};
+      tops.forEach(t => { rows[t] = (rows[t] || 0) + 1; });
+      expect(Object.values(rows)).toEqual([5, 5]);
+    }
+  });
+
+  test('주요 스트립에는 주요 속보 기사를 다시 올리지 않는다 (바로 아래 띠에 이미 보인다)', async ({ page }) => {
+    await open(page);
+    const cats = await page.locator('#headline li').evaluateAll(els =>
+      els.map(li => window.NewsData.articles.find(a => a.id === li.dataset.id).category));
+    expect(cats.length).toBeGreaterThan(0);
+    expect(cats).not.toContain('breaking');
+  });
+
+  test('공시 기사는 카드 보기에서 쉬운 풀이가 보인다', async ({ page }) => {
+    await open(page);
+    await setView(page, 'card');
+    await page.locator('#chips .chip[data-cat="invest"]').click();
+
+    /* 공시는 하루 중 늦게 수집되거나 주말이면 없을 수 있다. 그때는 목업과 같은 모양을 하나 넣어 그린다 */
+    const id = await page.evaluate(() => {
+      let a = window.NewsData.articles.find(x => x.category === 'invest' && /^\[공시\]/.test(x.title));
+      if (!a) {
+        a = { id: 'test-disclosure', category: 'invest', source: '공시알림(견본)', importance: 1,
+          title: '[공시] 견본전자 · 자사주 매입', summary: '', keywords: ['공시'],
+          points: ['회사가 자기 회사 주식을 사들이기로 했다는 공시입니다.', '공시명: 자기주식취득결정'],
+          url: 'https://example.com/d', publishedAt: new Date().toISOString() };
+        window.NewsData.articles.unshift(a);
+      }
+      /* 카드 보기는 처음 12건만 그린다. 공시가 오전에 나왔으면 그 뒤에 있으므로 다 펼친다 */
+      window.__app.state.limit = window.NewsData.articles.length;
+      window.__app.render();
+      return a.id;
+    });
+
+    const card = page.locator('.card[data-id="' + id + '"]');
+    await expect(card).toBeVisible();
+    await expect(card.locator('.pts li').first()).toContainText('공시');
+    await expect(card.locator('.pts li').nth(1)).toContainText('공시명');
+  });
+
   test('주요 뉴스의 시각이 상자 밖으로 삐져나가지 않는다 (긴 제목은 말줄임)', async ({ page }) => {
     await open(page);
     await page.evaluate(() => {

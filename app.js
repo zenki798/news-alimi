@@ -164,7 +164,11 @@
     const el = $('headline');
     if (state.view !== 'dashboard') { el.hidden = true; el.innerHTML = ''; return; }
 
-    const top = byOrder(base().filter(a => a.importance >= 3)).slice(0, 5);
+    /* 띠로 펼치는 칸(주요 속보)은 바로 아래에 이미 보인다. 여기에도 올리면 같은 제목이 위아래로 두 번 보인다 */
+    const top = byOrder(base().filter(a => {
+      const cat = NewsData.category(a.category);
+      return a.importance >= 3 && !(cat && cat.wide);
+    })).slice(0, 5);
     if (!top.length) { el.hidden = true; el.innerHTML = ''; return; }
 
     el.hidden = false;
@@ -196,8 +200,11 @@
             '</li>').join('') + '</ol>'
         : '<p class="none">해당 기사가 없습니다.</p>';
 
-      return '<section class="col" data-col="' + c.key + '" style="--c:' + c.color + '">' +
+      /* wide: 한 줄을 통째로 쓰는 띠 (주요 속보). 나머지 칸이 5칸씩 맞아떨어진다 */
+      return '<section class="col' + (c.wide ? ' wide' : '') + '" data-col="' + c.key + '" style="--c:' + c.color + '">' +
         '<header><h3>' + esc(c.name) + '</h3><span class="n">' + mine.length + '</span></header>' +
+        /* 칼럼 안내(선택) — 투자 칸의 "투자 권유 아님" 같은 것. 없는 카테고리는 아무것도 그리지 않는다 */
+        (c.note ? '<p class="note">' + esc(c.note) + '</p>' : '') +
         items +
         (rest > 0
           ? '<button class="more" data-more="' + c.key + '">+' + rest + '건 더 보기</button>'

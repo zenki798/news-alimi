@@ -147,8 +147,8 @@ test.describe('스크롤 길이 제어', () => {
     expect(total).toBeGreaterThan(PAGE);
     await expect(page.locator('#btnMore')).toBeVisible();
 
-    // 끝까지 누르면 사라진다
-    for (let i = 0; i < 10; i++) {
+    // 끝까지 누르면 사라진다. 누를 횟수는 실제 건수로 정한다 (10개 분야 × 14건이면 열 번으로 모자란다)
+    for (let i = 0; i < Math.ceil(total / PAGE); i++) {
       if (await page.locator('#btnMore').isHidden()) break;
       await page.locator('#btnMore').click();
     }

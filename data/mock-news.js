@@ -29,18 +29,45 @@
 (function (global) {
   'use strict';
 
+  /* scripts/fetch-news.js 의 CATEGORIES 와 같아야 한다 (tests/collector.spec.js 가 비교한다) */
   const CATEGORIES = [
-    { key: 'it',       name: 'IT·개발·AI', color: '#5b9cff' },
-    { key: 'econ',     name: '경제·증시',  color: '#2fbf71' },
-    { key: 'domestic', name: '국내 종합',  color: '#ff8a4c' },
-    { key: 'world',    name: '해외·글로벌', color: '#a78bfa' },
-    { key: 'sports',   name: '스포츠',     color: '#ff5d8f' },
-    { key: 'ent',      name: '연예',       color: '#f7b731' },
-    { key: 'estate',   name: '부동산',     color: '#22c9c9' },
+    { key: 'breaking',   name: '주요 속보',   color: '#ff4b4b', wide: true },
+    { key: 'it',         name: 'IT·개발·AI',  color: '#5b9cff' },
+    { key: 'econ',       name: '경제·증시',   color: '#2fbf71' },
+    { key: 'globalecon', name: '글로벌 경제', color: '#38bdf8' },
+    { key: 'invest',     name: '투자',        color: '#c3e04a',
+      note: '투자 권유가 아닙니다. 공시 풀이는 이 사이트가 붙인 일반 설명입니다.' },
+    { key: 'estate',     name: '부동산',      color: '#22c9c9' },
+    { key: 'politics',   name: '정치',        color: '#e879f9' },
+    { key: 'society',    name: '사회',        color: '#ff8a4c' },
+    { key: 'world',      name: '해외·글로벌', color: '#a78bfa' },
+    { key: 'sports',     name: '스포츠',      color: '#ff5d8f' },
+    { key: 'ent',        name: '연예',        color: '#f7b731' },
   ];
 
   /* 견본 기사. 실제 사건이 아니다. */
   const RAW = [
+    /* ---------- 주요 속보 ----------
+       실제 수집물처럼 통신사의 [속보] 표시가 붙은 제목만 두고, 요약은 비운다 (속보는 제목만 먼저 나온다) */
+    {
+      id: 'brk-01', category: 'breaking', source: '속보데스크', importance: 3, minutesAgo: 6,
+      title: '[속보] 국회 본회의, 데이터 기본법 개정안 가결',
+      summary: '', keywords: ['국회', '법안'],
+      url: 'https://example.com/news/brk-01',
+    },
+    {
+      id: 'brk-02', category: 'breaking', source: '속보데스크', importance: 2, minutesAgo: 41,
+      title: '[속보] 기상청, 남해안 일대 호우경보로 상향',
+      summary: '', keywords: ['날씨', '호우'],
+      url: 'https://example.com/news/brk-02',
+    },
+    {
+      id: 'brk-03', category: 'breaking', source: '속보데스크', importance: 1, minutesAgo: 180,
+      title: '[1보] 대표팀, 아시아선수권 결승 진출',
+      summary: '', keywords: ['스포츠'],
+      url: 'https://example.com/news/brk-03',
+    },
+
     /* ---------- IT·개발·AI ---------- */
     {
       id: 'it-01', category: 'it', source: '테크브리핑', importance: 3, minutesAgo: 24,
@@ -101,30 +128,109 @@
       url: 'https://example.com/news/econ-03',
     },
 
-    /* ---------- 국내 종합 ---------- */
+    /* ---------- 글로벌 경제 ---------- */
     {
-      id: 'dom-01', category: 'domestic', source: '종합뉴스', importance: 3, minutesAgo: 35,
+      id: 'gec-01', category: 'globalecon', source: '해외시장노트', importance: 3, minutesAgo: 18,
+      title: '미국 장기 국채금리 오름세, 달러 강세 사흘째',
+      summary: '미국 10년물 국채금리가 사흘 연속 올랐다. 소비 지표가 예상보다 강하게 나오면서 금리 인하 기대가 줄어든 영향이다. 달러도 주요 통화 대비 강세를 이어갔다.',
+      points: ['10년물 금리 사흘 연속 상승', '강한 소비 지표가 배경', '달러 주요 통화 대비 강세'],
+      keywords: ['미국 국채', '금리', '달러'],
+      url: 'https://example.com/news/gec-01',
+    },
+    {
+      id: 'gec-02', category: 'globalecon', source: '해외시장노트', importance: 2, minutesAgo: 95,
+      title: '유럽 제조업 경기지수 석 달 만에 반등',
+      summary: '유로존 제조업 구매관리자지수(PMI)가 석 달 만에 올랐다. 신규 주문이 늘었지만 기준선인 50에는 아직 못 미친다.',
+      points: ['석 달 만에 반등', '신규 주문 증가', '기준선 50 아래'],
+      keywords: ['유럽', 'PMI', '제조업'],
+      url: 'https://example.com/news/gec-02',
+    },
+    {
+      id: 'gec-03', category: 'globalecon', source: '글로벌머니', importance: 1, minutesAgo: 260,
+      title: '국제유가, 공급 우려에 주간 상승 마감',
+      summary: '산유국 감산 연장 가능성이 거론되며 국제유가가 한 주 동안 올랐다.',
+      points: ['감산 연장 가능성 거론', '주간 기준 상승'],
+      keywords: ['유가', '원유'],
+      url: 'https://example.com/news/gec-03',
+    },
+
+    /* ---------- 투자 ---------- */
+    {
+      id: 'inv-01', category: 'invest', source: '투자관측', importance: 3, minutesAgo: 26,
+      title: '[채권분석] 단기물 금리 하락, 시장은 연내 인하에 무게',
+      summary: '국고채 단기물 금리가 내려가며 장단기 금리 차가 벌어졌다. 채권 시장 참가자들은 연내 기준금리 인하 가능성을 더 높게 보고 있다.',
+      points: ['단기물 중심 금리 하락', '장단기 금리 차 확대', '연내 인하 기대 반영'],
+      keywords: ['채권', '국고채', '금리'],
+      url: 'https://example.com/news/inv-01',
+    },
+    {
+      id: 'inv-02', category: 'invest', source: '투자관측', importance: 2, minutesAgo: 70,
+      title: '해외 대체투자 운용사, 국내 기관 대상 사모대출 펀드 설명회',
+      summary: '해외 대체투자 운용사가 국내 연기금과 보험사를 대상으로 사모대출 펀드 설명회를 열었다. 분산투자 수요를 겨냥했다.',
+      points: ['연기금·보험사 대상', '사모대출 펀드 소개'],
+      keywords: ['사모대출', '대체투자'],
+      url: 'https://example.com/news/inv-02',
+    },
+    {
+      /* 공시를 기사 모양으로 바꾼 견본. 실제 수집물처럼 요약은 비우고 풀이를 points 에 둔다 */
+      id: 'inv-03', category: 'invest', source: '공시알림(견본)', importance: 1, minutesAgo: 150,
+      title: '[공시] 견본전자 · 자사주 매입',
+      summary: '',
+      points: ['회사가 자기 회사 주식을 사들이기로 했다는 공시입니다. 흔히 주주환원 정책으로 분류됩니다.', '공시명: 자기주식취득결정'],
+      keywords: ['공시', '자사주 매입'],
+      url: 'https://example.com/news/inv-03',
+    },
+
+    /* ---------- 정치 ---------- */
+    {
+      id: 'pol-01', category: 'politics', source: '정치관측', importance: 3, minutesAgo: 30,
+      title: '국회 상임위, 데이터 기본법 개정안 의결',
+      summary: '국회 상임위원회가 데이터 기본법 개정안을 의결했다. 공공 데이터 개방 범위를 넓히고 개인정보 가명처리 기준을 구체화하는 내용이다. 본회의 표결은 다음 달로 예정됐다.',
+      points: ['공공 데이터 개방 범위 확대', '가명처리 기준 구체화', '본회의 표결 다음 달'],
+      keywords: ['국회', '데이터', '법안'],
+      url: 'https://example.com/news/pol-01',
+    },
+    {
+      id: 'pol-02', category: 'politics', source: '정치관측', importance: 2, minutesAgo: 120,
+      title: '여야, 내년도 예산안 심사 일정 합의',
+      summary: '여야가 내년도 예산안 심사 일정에 합의했다. 상임위 예비심사를 이달 안에 마치고 예결위 심사에 들어간다.',
+      points: ['상임위 예비심사 이달 마무리', '이후 예결위 심사'],
+      keywords: ['예산안', '국회'],
+      url: 'https://example.com/news/pol-02',
+    },
+    {
+      id: 'pol-03', category: 'politics', source: '국회노트', importance: 1, minutesAgo: 280,
+      title: '선거구 획정 논의 착수, 인구 기준일 쟁점',
+      summary: '다음 선거를 앞두고 선거구 획정 논의가 시작됐다. 인구 산정 기준일을 언제로 잡을지가 첫 쟁점이다.',
+      points: ['획정 논의 착수', '인구 기준일이 쟁점'],
+      keywords: ['선거구', '획정'],
+      url: 'https://example.com/news/pol-03',
+    },
+
+    /* ---------- 사회 ---------- */
+    {
+      id: 'soc-01', category: 'society', source: '종합뉴스', importance: 3, minutesAgo: 35,
       title: '전국 초중고 디지털 교과서 전면 도입 일정 확정',
       summary: '교육 당국이 디지털 교과서 도입 일정을 확정했다. 내년 1학기부터 수학과 영어에 우선 적용하고 단계적으로 과목을 확대한다. 기기 보급과 교사 연수가 선행 과제로 지적됐다.',
       points: ['내년 1학기 수학·영어 우선 적용', '3년에 걸쳐 전 과목 확대', '기기 보급률과 교사 연수가 과제'],
       keywords: ['교육', '디지털 교과서'],
-      url: 'https://example.com/news/dom-01',
+      url: 'https://example.com/news/soc-01',
     },
     {
-      id: 'dom-02', category: 'domestic', source: '종합뉴스', importance: 2, minutesAgo: 112,
+      id: 'soc-02', category: 'society', source: '종합뉴스', importance: 2, minutesAgo: 112,
       title: '수도권 광역버스 준공영제 확대 시행',
       summary: '수도권 광역버스 노선에 준공영제가 추가 적용된다. 출퇴근 시간대 배차 간격이 줄어들고 입석 운행이 제한된다. 재정 부담 분담 방식은 지자체 간 협의가 남았다.',
       points: ['출퇴근 배차 간격 축소', '입석 운행 단계적 제한', '재정 분담 협의 진행 중'],
       keywords: ['교통', '광역버스'],
-      url: 'https://example.com/news/dom-02',
+      url: 'https://example.com/news/soc-02',
     },
     {
-      id: 'dom-03', category: 'domestic', source: '시민리포트', importance: 1, minutesAgo: 265,
+      id: 'soc-03', category: 'society', source: '시민리포트', importance: 1, minutesAgo: 265,
       title: '가을 태풍 영향권, 주말 전국 비바람',
       summary: '남해상을 지나는 태풍의 영향으로 주말 전국에 비와 강풍이 예상된다. 해안 지역은 높은 물결에 주의가 필요하다.',
       points: ['토요일 밤부터 전국 강수', '해안가 강풍·높은 물결 주의'],
       keywords: ['날씨', '태풍'],
-      url: 'https://example.com/news/dom-03',
+      url: 'https://example.com/news/soc-03',
     },
 
     /* ---------- 해외·글로벌 ---------- */
