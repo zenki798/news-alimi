@@ -83,6 +83,38 @@ test.describe('읽음 표시', () => {
     await expect(page.locator('#perCat')).toHaveValue('3');
   });
 
+  test('고른 분야(여러 개)는 새로고침 후에도 남고, "더 보기"로 한 분야를 잠깐 봐도 덮어쓰지 않는다', async ({ page }) => {
+    await open(page);
+    const chip = k => page.locator('#chips .chip[data-cat="' + k + '"]');
+    await chip('it').click();
+    await chip('politics').click();
+
+    await page.reload();
+    await waitReady(page);
+    await expect(chip('it')).toHaveAttribute('aria-pressed', 'true');
+    await expect(chip('politics')).toHaveAttribute('aria-pressed', 'true');
+    await expect(chip('all')).toHaveAttribute('aria-pressed', 'false');
+
+    /* 대시보드 칸의 "더 보기"는 그 분야만 카드로 보여 주지만, 골라 둔 분야는 그대로 남는다 */
+    await page.locator('#perCat').selectOption('3');
+    await page.locator('.col[data-col="it"] .more').click();
+    await expect(chip('politics')).toHaveAttribute('aria-pressed', 'false');
+    await page.reload();
+    await waitReady(page);
+    await expect(chip('it')).toHaveAttribute('aria-pressed', 'true');
+    await expect(chip('politics')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('저장해 둔 분야가 새 뉴스에 없으면 무시한다 (모두 없으면 전체)', async ({ page }) => {
+    await page.addInitScript(() => {
+      try { localStorage.setItem('newsalimi.cats', JSON.stringify(['없어진분야'])); } catch (e) { /* 무시 */ }
+    });
+    await open(page);
+    await expect(page.locator('#chips .chip[data-cat="all"]')).toHaveAttribute('aria-pressed', 'true');
+    const total = await page.evaluate(() => window.NewsData.articles.length);
+    await expect(page.locator('#count')).toHaveText(String(total));
+  });
+
   test('칼럼의 더보기를 누르면 그 카테고리 카드 보기로 넘어간다', async ({ page }) => {
     await open(page);
 

@@ -58,7 +58,8 @@
 
   /* ---------- 상태 ---------- */
   const state = {
-    category: 'all',
+    /* 고른 분야(여러 개). 비어 있으면 "전체". 예전에는 한 분야만 고를 수 있었다(2026-10-01 여러 개로) */
+    cats: new Set(),
     query: '',
     sort: 'latest',        // latest | importance
     view: 'dashboard',     // dashboard | card | compact
@@ -72,6 +73,7 @@
   const KEY_READ = 'newsalimi.read';
   const KEY_VIEW = 'newsalimi.view';
   const KEY_PER  = 'newsalimi.perCat';
+  const KEY_CATS = 'newsalimi.cats';   // 고른 분야 — 원하는 분야만 골라 두고 쓰므로 다음에 열어도 남긴다
 
   function loadPrefs() {
     try {
@@ -81,6 +83,8 @@
       if (v === 'dashboard' || v === 'card' || v === 'compact') state.view = v;
       const p = Number(localStorage.getItem(KEY_PER));
       if ([3, 4, 5, 10].indexOf(p) >= 0) state.perCat = p;
+      const c = JSON.parse(localStorage.getItem(KEY_CATS) || '[]');
+      if (Array.isArray(c)) c.forEach(k => { if (NewsData.category(k)) state.cats.add(k); });
     } catch (e) { /* 저장소를 못 써도 화면은 정상 동작해야 한다 */ }
   }
 
@@ -90,6 +94,11 @@
       localStorage.setItem(KEY_VIEW, state.view);
       localStorage.setItem(KEY_PER, String(state.perCat));
     } catch (e) { /* 무시 */ }
+  }
+
+  /** 고른 분야는 칩을 직접 눌렀을 때만 저장한다. 칸의 "더 보기"로 한 분야를 잠깐 볼 때 골라 둔 것을 덮어쓰지 않게 */
+  function saveCats() {
+    try { localStorage.setItem(KEY_CATS, JSON.stringify(Array.from(state.cats))); } catch (e) { /* 무시 */ }
   }
 
   /* ---------- 유틸 ---------- */
@@ -137,11 +146,13 @@
     return cat && cat.rank ? list.slice().sort((x, y) => x.rank - y.rank) : byOrder(list);
   }
 
-  /** 카테고리까지 적용한 최종 목록 */
+  /** 고른 분야에 드는가. 아무것도 안 골랐으면 "전체" */
+  const picked = key => state.cats.size === 0 || state.cats.has(key);
+
+  /** 카테고리까지 적용한 최종 목록. 한 분야만 골랐고 그게 순위 칸이면 순위대로, 아니면 정렬 기준대로 */
   function filtered() {
-    return inOrder(base().filter(a =>
-      state.category === 'all' || a.category === state.category),
-      state.category === 'all' ? null : NewsData.category(state.category));
+    const only = state.cats.size === 1 ? NewsData.category(Array.from(state.cats)[0]) : null;
+    return inOrder(base().filter(a => picked(a.category)), only);
   }
 
   /* ---------- 렌더링 ---------- */
@@ -189,15 +200,27 @@
 
     const chip = (key, name, color, n) =>
       '<button class="chip" data-cat="' + key + '"' +
-        ' aria-pressed="' + (state.category === key) + '"' +
+        ' aria-pressed="' + (key === 'all' ? state.cats.size === 0 : state.cats.has(key)) + '"' +
         ' style="--c:' + color + '">' + esc(name) + '<span class="n">' + n + '</span></button>';
 
     $('chips').innerHTML =
       chip('all', '전체', '#8b95a6', counts.all) +
-      NewsData.categories.map(c => chip(c.key, c.name, c.color, counts[c.key])).join('');
+      NewsData.categories.map(c => chip(c.key, c.name, c.color, counts[c.key])).join('') +
+      /* 여러 개를 고를 수 있다는 것을 알린다. 하나만 고를 수 있는 줄 알기 쉽다 */
+      '<span class="hint">여러 개 고를 수 있어요</span>';
 
     $('chips').querySelectorAll('.chip').forEach(el => {
-      el.onclick = () => { state.category = el.dataset.cat; state.limit = PAGE; render(); };
+      /* 누르면 켜고, 다시 누르면 끈다. "전체"는 모두 푼다. 전부 켜면 "전체"와 같다 */
+      el.onclick = () => {
+        const k = el.dataset.cat;
+        if (k === 'all') state.cats.clear();
+        else if (state.cats.has(k)) state.cats.delete(k);
+        else state.cats.add(k);
+        if (state.cats.size === NewsData.categories.length) state.cats.clear();
+        state.limit = PAGE;
+        saveCats();
+        render();
+      };
     });
   }
 
@@ -213,9 +236,7 @@
      좁으면 위아래로 쌓인다. 나머지 10칸은 그 아래 5칸씩 두 줄로 맞아떨어진다. */
   function dashboardHtml() {
     const list = base();
-    const cats = state.category === 'all'
-      ? NewsData.categories
-      : NewsData.categories.filter(c => c.key === state.category);
+    const cats = NewsData.categories.filter(c => picked(c.key));
 
     const colHtml = c => {
       const mine = inOrder(list.filter(a => a.category === c.key), c);
@@ -330,7 +351,8 @@
     /* 칼럼의 "더 보기" — 그 카테고리로 좁히고 정독용 카드 보기로 넘어간다 */
     wrap.querySelectorAll('.more').forEach(el => {
       el.onclick = () => {
-        state.category = el.dataset.more;
+        state.cats.clear();
+        state.cats.add(el.dataset.more);
         state.view = 'card';
         state.limit = PAGE;
         savePrefs();
@@ -349,6 +371,7 @@
   }
 
   function render() {
+    state.cats.forEach(k => { if (!NewsData.category(k)) state.cats.delete(k); });
     renderControls();
     renderChips();
     renderList();

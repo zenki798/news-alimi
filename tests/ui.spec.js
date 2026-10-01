@@ -49,6 +49,8 @@ test.describe('화면과 조작', () => {
 
     const cats = await page.evaluate(() => window.NewsData.categories.map(c => c.key));
     for (const key of cats) {
+      /* 칩은 여러 개 켜진다. 한 분야만 보려고 "전체"로 푼 뒤 누른다 */
+      await page.locator('#chips .chip[data-cat="all"]').click();
       await page.locator('#chips .chip[data-cat="' + key + '"]').click();
 
       const badge = await chipCount(page, key);
@@ -62,6 +64,45 @@ test.describe('화면과 조작', () => {
       }, key);
       expect(allSame, key + ' 외의 카테고리가 섞였거나 비었다').toBe(true);
     }
+  });
+
+  test('분야를 여러 개 고를 수 있다 — 누르면 켜고 다시 누르면 끄고, "전체"는 모두 푼다', async ({ page }) => {
+    await open(page);
+    const chip = k => page.locator('#chips .chip[data-cat="' + k + '"]');
+    const shownCats = () => page.evaluate(() =>
+      Array.from(new Set(window.__app.filtered().map(a => a.category))).sort());
+    const colCats = () => page.locator('#list .col').evaluateAll(els => els.map(e => e.dataset.col).sort());
+
+    await expect(page.locator('#chips .hint')).toContainText('여러 개');
+
+    await chip('it').click();
+    await chip('econ').click();
+    await expect(chip('it')).toHaveAttribute('aria-pressed', 'true');
+    await expect(chip('econ')).toHaveAttribute('aria-pressed', 'true');
+    await expect(chip('all')).toHaveAttribute('aria-pressed', 'false');
+    expect(await shownCats()).toEqual(['econ', 'it']);
+    expect(await colCats(), '대시보드에도 고른 두 칸만').toEqual(['econ', 'it']);
+    /* 표시 건수는 두 분야 배지의 합 */
+    const sum = (await chipCount(page, 'it')) + (await chipCount(page, 'econ'));
+    await expect(page.locator('#count')).toHaveText(String(sum));
+
+    /* 다시 누르면 그 분야만 꺼진다 */
+    await chip('it').click();
+    await expect(chip('it')).toHaveAttribute('aria-pressed', 'false');
+    expect(await shownCats()).toEqual(['econ']);
+
+    /* "전체"는 모두 푼다 */
+    await chip('all').click();
+    await expect(chip('all')).toHaveAttribute('aria-pressed', 'true');
+    await expect(chip('econ')).toHaveAttribute('aria-pressed', 'false');
+    const all = await page.evaluate(() => window.NewsData.articles.length);
+    await expect(page.locator('#count')).toHaveText(String(all));
+
+    /* 모든 분야를 하나씩 켜면 "전체"와 같다 */
+    const keys = await page.evaluate(() => window.NewsData.categories.map(c => c.key));
+    for (const k of keys) await chip(k).click();
+    await expect(chip('all')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#chips .chip[aria-pressed="true"]')).toHaveCount(1);
   });
 
   test('검색이 제목·요약·키워드에서 걸린다', async ({ page }) => {
