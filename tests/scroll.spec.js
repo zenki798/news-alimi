@@ -43,7 +43,8 @@ test.describe('스크롤 길이 제어', () => {
     await inflate(page, 300);
 
     const per = await page.evaluate(() => window.__app.state.perCat);
-    const cols = page.locator('.col');
+    /* 주요 속보 띠(.wide)는 칼럼당 건수가 아니라 자기 상한(5·3건)을 따른다 — 아래 '주요 속보 띠' 에서 본다 */
+    const cols = page.locator('.col:not(.wide)');
     const n = await cols.count();
     expect(n).toBeGreaterThan(0);
 
@@ -96,13 +97,13 @@ test.describe('스크롤 길이 제어', () => {
 
     await page.locator('#perCat').selectOption('3');
     let max = await page.evaluate(() =>
-      Math.max.apply(null, Array.from(document.querySelectorAll('.col'))
+      Math.max.apply(null, Array.from(document.querySelectorAll('.col:not(.wide)'))
         .map(c => c.querySelectorAll('li[data-id]').length)));
     expect(max).toBe(3);
 
     await page.locator('#perCat').selectOption('10');
     max = await page.evaluate(() =>
-      Math.max.apply(null, Array.from(document.querySelectorAll('.col'))
+      Math.max.apply(null, Array.from(document.querySelectorAll('.col:not(.wide)'))
         .map(c => c.querySelectorAll('li[data-id]').length)));
     expect(max).toBe(10);
   });
@@ -171,31 +172,52 @@ test.describe('스크롤 길이 제어', () => {
   });
 });
 
-test.describe('주요 뉴스 스트립', () => {
-  test('대시보드에서 중요 기사를 최대 5건까지 위에 띄운다', async ({ page }) => {
+/*
+ * 예전에는 대시보드 맨 위에 "주요" 칸(분야마다 최신 기사 하나씩)을 두었다. 바로 아래 주요 속보 띠와
+ * 빨간 상자 둘이 붙어 시선이 갈리고, 내용도 각 칸 맨 위 기사와 겹쳐서 없앴다(2026-10-01).
+ * 이제 맨 위에서 눈을 끄는 것은 속보 띠 하나이고, 띠가 길어져 분야 칸을 밀어내지 않게 상한을 둔다.
+ */
+test.describe('주요 속보 띠', () => {
+  test('빨간 상자는 속보 띠 하나뿐이다 — "주요" 칸·딱지를 따로 두지 않는다', async ({ page }) => {
     await open(page);
 
-    await expect(page.locator('#headline')).toBeVisible();
-    const n = await page.locator('#headline li').count();
-    expect(n).toBeGreaterThan(0);
-    expect(n).toBeLessThanOrEqual(5);
+    await expect(page.locator('#headline')).toHaveCount(0);
+    await expect(page.locator('#list .col.wide')).toHaveCount(1);
+    await expect(page.locator('#list .col').first()).toHaveClass(/wide/);
 
-    const allTop = await page.evaluate(() =>
-      Array.from(document.querySelectorAll('#headline li')).every(li =>
-        window.NewsData.articles.find(a => a.id === li.dataset.id).importance >= 3));
-    expect(allTop, '중요도 3이 아닌 기사가 주요 스트립에 올라갔다').toBe(true);
+    /* 카드 보기의 "주요" 딱지도 같은 규칙(분야마다 최신 기사)에서 나와 속보와 헷갈렸다 */
+    await setView(page, 'card');
+    await expect(page.locator('.card').first()).toBeVisible();
+    await expect(page.locator('.card .hot')).toHaveCount(0);
   });
 
-  test('카드·간결 보기에서는 주요 스트립을 숨긴다', async ({ page }) => {
+  test('띠는 칼럼당 건수와 상관없이 넓은 화면 5건·좁은 화면 3건까지만 보인다', async ({ page }) => {
     await open(page);
+    await inflate(page, 300);
+    const want = page.viewportSize().width <= 560 ? 3 : 5;
 
-    await setView(page, 'card');
-    await expect(page.locator('#headline')).toBeHidden();
+    for (const per of ['3', '10']) {
+      await page.locator('#perCat').selectOption(per);
+      const band = page.locator('#list .col.wide');
+      await expect(band.locator('li[data-id]'), '칼럼당 ' + per + '건일 때').toHaveCount(want);
+      /* 다 못 보인 만큼 "더 보기" 로 넘긴다 */
+      const total = Number(await band.locator('header .n').textContent());
+      await expect(band.locator('.more')).toHaveText('+' + (total - want) + '건 더 보기');
+    }
+  });
 
-    await setView(page, 'compact');
-    await expect(page.locator('#headline')).toBeHidden();
-
-    await setView(page, 'dashboard');
-    await expect(page.locator('#headline')).toBeVisible();
+  test('띠의 긴 제목은 두 줄까지만 보인다 (한 건 때문에 띠 전체가 높아지지 않게)', async ({ page }) => {
+    await open(page);
+    await page.evaluate(() => {
+      const top = window.__app.base().filter(a => a.category === 'breaking')
+        .sort((x, y) => new Date(y.publishedAt) - new Date(x.publishedAt))[0];
+      top.title = '[속보] ' + '아주 긴 속보 제목이 이어진다 '.repeat(20);
+      window.__app.render();
+    });
+    const h = await page.locator('#list .col.wide li a').first().evaluate(el => {
+      const s = getComputedStyle(el);
+      return { height: el.getBoundingClientRect().height, line: parseFloat(s.lineHeight) };
+    });
+    expect(h.height, JSON.stringify(h)).toBeLessThanOrEqual(h.line * 2 + 2);
   });
 });

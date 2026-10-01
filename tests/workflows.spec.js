@@ -1,5 +1,5 @@
 // 수집·배포 워크플로 설정 — 사이트의 뉴스가 멈추지 않게 하는 구조를 지킨다 (AGENTS.md 4항)
-// 설정 글자만 볼 수 있다. 실제로 약 15분마다 도는지는 Actions 탭의 실행 기록으로 확인한다.
+// 설정 글자만 볼 수 있다. 실제로 약 5분마다 도는지는 Actions 탭의 실행 기록으로 확인한다.
 const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
@@ -73,8 +73,9 @@ test('끝날 때마다 다음 차례를 부르고, 다음 차례는 환경의 �
   // 기다리기: 앞 차례가 부른 실행만, 환경 news-interval 의 wait timer 로 (러너를 쓰지 않는다)
   expect(ifOf(jobs.wait)).toBe("github.event_name == 'workflow_dispatch' && inputs.chain");
   expect(jobs.wait).toMatch(/^ {4}environment: news-interval$/m);
-  // 타이머가 사라져 기다리지 않았으면 실패해서 사슬을 끊는다 (끝없이 도는 것 방지)
-  expect(jobs.wait).toMatch(/if \[ "\$waited" -lt 600 \]; then[\s\S]*?exit 1/);
+  // 타이머가 사라져 기다리지 않았으면 실패해서 사슬을 끊는다 (끝없이 도는 것 방지).
+  // 타이머는 4분이고, 3분 미만을 실패로 본다. 0 으로 두면 이 안전장치가 없어진다.
+  expect(jobs.wait).toMatch(/if \[ "\$waited" -lt 180 \]; then[\s\S]*?exit 1/);
 
   // 기다리기를 건너뛴 실행(푸시·수동·예약)도 수집하고, 대기 확인이 실패하면 수집하지 않는다
   expect(ifOf(jobs.build)).toBe("${{ !cancelled() && needs.wait.result != 'failure' }}");
@@ -105,7 +106,7 @@ test('예약은 사슬이 끊겼을 때 다시 잇는 예비용이고, 혼잡한
 
 test('저장소 사본(data/news.js)은 하루 한 번만 커밋하고, 커밋이 실패해도 배포는 한다', async () => {
   /* git 은 지난 커밋을 지울 수 없다(이력 재작성 필요). 그래서 애초에 적게 넣는다.
-     15분마다 커밋하면 한 해 약 290MB, 하루 한 번이면 약 3MB (커밋당 약 8KB, 2026-09-30 측정). */
+     5분마다 커밋하면 한 해 약 840MB, 하루 한 번이면 약 3MB (커밋당 약 8KB, 2026-09-30 측정). */
   const build = jobsOf(read(WF)).build;
   expect(build).toMatch(/daily=\$\(\[ "\$age" -ge 86400 \]/);
   const step = build.slice(build.indexOf('- name: 저장소 사본 커밋'));
@@ -115,14 +116,17 @@ test('저장소 사본(data/news.js)은 하루 한 번만 커밋하고, 커밋�
   expect(read(WF)).toMatch(/^ {2}contents: write/m);
 });
 
-test('15분마다 생기는 기록은 오래되면 지운다 — 배포 산출물 1일, 실행·배포 기록 7일', async () => {
+test('5분마다 생기는 기록은 오래되면 지운다 — 배포 산출물 1일, 실행·배포 기록 7일', async () => {
   const yml = read(WF);
   const jobs = jobsOf(yml);
   expect(jobs.build).toMatch(/actions\/upload-pages-artifact@v3\n\s+with:\n\s+path: _site\n\s+retention-days: 1/);
 
-  // 하루 한 번(저장소 사본을 커밋하는 차례에) 돌고, 실패해도 수집·배포·다음 차례에는 영향이 없다
+  // 한 시간에 한 번(매시 0~4분에 시작한 차례) 돌고, 실패해도 수집·배포·다음 차례에는 영향이 없다.
+  // 하루 한 번에 몰면 약 1,500번 요청이라 GitHub API 한도(GITHUB_TOKEN 시간당 1,000회)를 넘는다.
   const cleanup = jobs.cleanup;
-  expect(ifOf(cleanup)).toBe("${{ !cancelled() && needs.build.result == 'success' && needs.build.outputs.daily == 'true' }}");
+  expect(jobs.build).toMatch(/^ {6}hourly: \$\{\{ steps\.daily\.outputs\.hourly \}\}$/m);
+  expect(jobs.build).toContain('echo "hourly=$([ "$((10#$(date -u +%M)))" -lt 5 ]');
+  expect(ifOf(cleanup)).toBe("${{ !cancelled() && needs.build.result == 'success' && needs.build.outputs.hourly == 'true' }}");
   expect(cleanup).toMatch(/^ {4}continue-on-error: true$/m);
   expect(jobs.next).not.toContain('cleanup');
 

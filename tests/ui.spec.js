@@ -157,13 +157,8 @@ test.describe('화면과 조작', () => {
     }
   });
 
-  test('주요 스트립에는 주요 속보 기사를 다시 올리지 않는다 (바로 아래 띠에 이미 보인다)', async ({ page }) => {
-    await open(page);
-    const cats = await page.locator('#headline li').evaluateAll(els =>
-      els.map(li => window.NewsData.articles.find(a => a.id === li.dataset.id).category));
-    expect(cats.length).toBeGreaterThan(0);
-    expect(cats).not.toContain('breaking');
-  });
+  /* "주요" 칸은 없앴다(2026-10-01). 그 칸을 보던 검사 두 개(속보 중복 금지·긴 제목 말줄임)는
+     scroll.spec.js 의 '주요 속보 띠' 검사(빨간 상자 하나·건수 상한·긴 제목 두 줄)로 옮겼다. */
 
   test('공시 기사는 카드 보기에서 쉬운 풀이가 보인다', async ({ page }) => {
     await open(page);
@@ -190,22 +185,5 @@ test.describe('화면과 조작', () => {
     await expect(card).toBeVisible();
     await expect(card.locator('.pts li').first()).toContainText('공시');
     await expect(card.locator('.pts li').nth(1)).toContainText('공시명');
-  });
-
-  test('주요 뉴스의 시각이 상자 밖으로 삐져나가지 않는다 (긴 제목은 말줄임)', async ({ page }) => {
-    await open(page);
-    await page.evaluate(() => {
-      const a = window.NewsData.articles.find(x => x.importance >= 3);
-      a.title = '아주 긴 제목 '.repeat(30);
-      window.__app.render();
-    });
-    const box = await page.locator('#headline').boundingBox();
-    const times = page.locator('#headline time');
-    const n = await times.count();
-    expect(n).toBeGreaterThan(0);
-    for (let i = 0; i < n; i++) {
-      const t = await times.nth(i).boundingBox();
-      expect(t.x + t.width, (i + 1) + '번째 시각').toBeLessThanOrEqual(box.x + box.width);
-    }
   });
 });

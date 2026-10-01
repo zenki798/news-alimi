@@ -21,7 +21,7 @@
   const PAGE = 12;          // card·compact 보기에서 한 번에 늘리는 건수
 
   /* 앱 모드: 홈 화면에 설치해서 실행한 경우. manifest 의 start_url 에 ?source=pwa 를 붙여 두었다.
-     앱에는 주소창·새로고침 버튼이 없으므로 화면에 새로고침 버튼을 내고, 앱으로 돌아올 때 뉴스를 다시 받는다. */
+     앱에는 주소창·새로고침 버튼이 없으므로 화면에 새로고침 버튼을 낸다. */
   const APP_MODE = (() => {
     try {
       return global.matchMedia('(display-mode: standalone)').matches ||
@@ -32,8 +32,29 @@
   })();
   document.documentElement.classList.toggle('app-mode', APP_MODE);
 
-  const STALE_MS = 10 * 60 * 1000;   // 앱으로 돌아왔을 때 이보다 오래됐으면 다시 받는다
-  let loadedAt = Date.now();
+  /* 띠(주요 속보)는 칼럼당 건수와 상관없이 넓은 화면 한 줄(5건)·휴대폰 3건까지만 그린다.
+     띠가 길어지면 맨 위에서 시선을 다 잡아먹고 분야 칸이 첫 화면 밖으로 밀린다. */
+  const BAND_WIDE = 5;
+  const BAND_NARROW = 3;
+  const narrow = global.matchMedia ? global.matchMedia('(max-width: 560px)') : null;
+  const bandSize = () => (narrow && narrow.matches ? BAND_NARROW : BAND_WIDE);
+
+  /* ---------- 열어 둔 화면에서 새 뉴스 자동 확인 ----------
+     수집은 약 5분마다 돈다. 화면을 열어 둔 채로도 새 속보가 들어오게, 화면이 보이는 동안 서버에 "바뀌었나"만 묻는다.
+     휴대폰 배터리를 아끼는 규칙 (AGENTS.md 5항):
+     - 화면이 안 보이면(다른 앱·다른 탭·화면 꺼짐) 묻지 않는다. 다시 보이면 그때 묻는다.
+     - 묻는 것은 HEAD 요청 하나다. 본문 없이 머리글만 오간다. 바뀌었을 때만 뉴스(압축 약 22KB)를 받는다.
+     - 다음 수집·배포가 끝났을 즈음(수집 시각 + 5분 30초)에 묻는다. 아직이면 1·2·4·5분으로 간격을 늘린다.
+     - 인터넷이 끊겼으면 묻지 않는다. file:// 로 열었으면 물을 서버가 없으므로 하지 않는다.
+     - 끝없이 도는 애니메이션을 쓰지 않는다. 화면을 계속 다시 그리면 배터리를 쓴다. */
+  const WATCH = /^https?:$/.test(location.protocol);
+  const CHECK_MIN = 60 * 1000;            // 가장 짧은 간격
+  const CHECK_MAX = 5 * 60 * 1000;        // 가장 긴 간격
+  const NEXT_DATA = 5.5 * 60 * 1000;      // 수집 시각 + 이만큼이면 다음 차례가 배포돼 있다 (대기 4분 + 수집·배포 약 1분)
+  const NEWER_GAP = 3 * 60 * 1000;        // 서버 파일이 보이는 수집보다 이만큼 늦게 올라왔으면 그 사이 새로 수집한 것
+  const FRESH_MS = 10 * 60 * 1000;        // 새로 들어온 속보에 "새" 표시를 붙여 두는 시간
+  const watch = { timer: null, lastCheck: Date.now(), backoff: CHECK_MIN, tag: null };
+  const fresh = new Map();                // 새로 들어온 속보 id → 들어온 시각
 
   /* ---------- 상태 ---------- */
   const state = {
@@ -159,26 +180,11 @@
     });
   }
 
-  /* ---- 주요 뉴스 스트립 — 대시보드 맨 위에서 가장 중요한 것만 먼저 보여준다 ---- */
-  function renderHeadlines() {
-    const el = $('headline');
-    if (state.view !== 'dashboard') { el.hidden = true; el.innerHTML = ''; return; }
+  /* 예전에는 대시보드 맨 위에 "주요" 칸(분야마다 최신 기사 하나씩)을 따로 두었다. 바로 아래 주요 속보 띠와
+     빨간 상자 둘이 붙어 시선이 갈렸고, 내용도 각 칸 맨 위 기사와 겹쳐서 없앴다(2026-10-01).
+     맨 위에서 눈을 끄는 것은 통신사가 급하다고 표시한 속보 띠 하나뿐이다. */
 
-    /* 띠로 펼치는 칸(주요 속보)은 바로 아래에 이미 보인다. 여기에도 올리면 같은 제목이 위아래로 두 번 보인다 */
-    const top = byOrder(base().filter(a => {
-      const cat = NewsData.category(a.category);
-      return a.importance >= 3 && !(cat && cat.wide);
-    })).slice(0, 5);
-    if (!top.length) { el.hidden = true; el.innerHTML = ''; return; }
-
-    el.hidden = false;
-    el.innerHTML = '<div class="hl-label">주요</div><ul>' + top.map(a => {
-      const cat = NewsData.category(a.category);
-      return '<li data-id="' + a.id + '" style="--c:' + (cat ? cat.color : '#8b95a6') + '">' +
-        '<a href="' + esc(a.url) + '" target="_blank" rel="noopener noreferrer">' + esc(a.title) + '</a>' +
-        '<time>' + relTime(a.publishedAt) + '</time></li>';
-    }).join('') + '</ul>';
-  }
+  const isFresh = id => fresh.has(id) && Date.now() - fresh.get(id) < FRESH_MS && !state.read.has(id);
 
   /* ---- 대시보드 — 카테고리를 나란히, 칼럼마다 상위 N건 ---- */
   function dashboardHtml() {
@@ -189,13 +195,15 @@
 
     const cols = cats.map(c => {
       const mine = byOrder(list.filter(a => a.category === c.key));
-      const shown = mine.slice(0, state.perCat);
+      const shown = mine.slice(0, c.wide ? bandSize() : state.perCat);
       const rest = mine.length - shown.length;
 
       const items = shown.length
         ? '<ol>' + shown.map(a =>
             '<li data-id="' + a.id + '"' + (state.read.has(a.id) ? ' class="read"' : '') + '>' +
-              '<a href="' + esc(a.url) + '" target="_blank" rel="noopener noreferrer">' + esc(a.title) + '</a>' +
+              '<a href="' + esc(a.url) + '" target="_blank" rel="noopener noreferrer">' +
+                /* 열어 둔 사이 새로 들어온 속보. 깜빡이지 않는 표시다(배터리) */
+                (c.wide && isFresh(a.id) ? '<b class="new">새</b>' : '') + esc(a.title) + '</a>' +
               '<time>' + relTime(a.publishedAt) + '</time>' +
             '</li>').join('') + '</ol>'
         : '<p class="none">해당 기사가 없습니다.</p>';
@@ -220,8 +228,8 @@
     return '<article class="card' + (state.read.has(a.id) ? ' read' : '') + '"' +
              ' data-id="' + a.id + '" style="--c:' + (cat ? cat.color : '#8b95a6') + '">' +
       '<div class="meta">' +
+        /* "주요" 딱지는 없앴다. 분야마다 최신 기사에 붙던 규칙 결과라 주요 속보와 헷갈렸다 */
         '<span class="cat">' + esc(cat ? cat.name : a.category) + '</span>' +
-        (a.importance >= 3 ? '<span class="hot">주요</span>' : '') +
         '<span class="src">' + esc(a.source) + '</span>' +
         '<time datetime="' + a.publishedAt + '">' + relTime(a.publishedAt) + '</time>' +
       '</div>' +
@@ -281,8 +289,8 @@
     $('totalCount').textContent = NewsData.articles.length;
     $('readCount').textContent = state.read.size;
 
-    /* 제목을 클릭하면 읽음으로 남긴다 (대시보드·주요 스트립·카드·목록 공통) */
-    document.querySelectorAll('#headline [data-id] a, #list [data-id] a').forEach(el => {
+    /* 제목을 클릭하면 읽음으로 남긴다 (대시보드·카드·목록 공통) */
+    document.querySelectorAll('#list [data-id] a').forEach(el => {
       el.addEventListener('click', () => {
         state.read.add(el.closest('[data-id]').dataset.id);
         savePrefs();
@@ -314,7 +322,6 @@
   function render() {
     renderControls();
     renderChips();
-    renderHeadlines();
     renderList();
   }
 
@@ -359,12 +366,73 @@
     });
 
     $('btnRefresh').addEventListener('click', refreshData);
+
+    /* 화면을 돌리거나 창 크기를 바꿔 넓은·좁은 화면이 바뀌면 띠 건수(5·3)를 다시 맞춘다 */
+    if (narrow && narrow.addEventListener) narrow.addEventListener('change', () => { if (state.view === 'dashboard') render(); });
+
+    /* 자동 확인: 화면이 안 보이면 멈추고, 다시 보이면 마지막으로 물은 지 1분이 지났을 때 바로 묻는다 */
     document.addEventListener('visibilitychange', () => {
-      if (APP_MODE && document.visibilityState === 'visible' && Date.now() - loadedAt > STALE_MS) refreshData();
+      if (document.visibilityState !== 'visible') { clearTimeout(watch.timer); watch.timer = null; return; }
+      scheduleCheck(CHECK_MIN - (Date.now() - watch.lastCheck));
     });
+    global.addEventListener('online', () => scheduleCheck(0));
 
     initInstall();
     render();
+    scheduleCheck(nextDelay(false));
+  }
+
+  /* ---------- 자동 확인 (위의 "열어 둔 화면에서 새 뉴스 자동 확인" 규칙) ---------- */
+  function scheduleCheck(delay) {
+    clearTimeout(watch.timer);
+    watch.timer = null;
+    if (!WATCH || document.visibilityState !== 'visible') return;
+    watch.timer = setTimeout(checkForNews, Math.max(0, delay));
+  }
+
+  /** 다음에 물을 때까지의 시간. 다음 수집이 끝났을 즈음으로 맞추고, 그때도 없으면 간격을 늘린다 */
+  function nextDelay(changed) {
+    if (changed) watch.backoff = CHECK_MIN;
+    const due = (Date.parse(NewsData.generatedAt || '') || 0) + NEXT_DATA - Date.now();
+    if (due > CHECK_MIN) return Math.min(due, CHECK_MAX);
+    const d = watch.backoff;
+    watch.backoff = Math.min(watch.backoff * 2, CHECK_MAX);
+    return d;
+  }
+
+  /** 서버에 "바뀌었나"만 묻는다 (HEAD — 본문 없음). 바뀌었으면 그때 받는다 */
+  function checkForNews() {
+    watch.timer = null;
+    if (!WATCH || document.visibilityState !== 'visible') return Promise.resolve(false);
+    if (navigator.onLine === false) return Promise.resolve(false);   // 연결되면 'online' 에서 다시 시작한다
+    watch.lastCheck = Date.now();
+    return fetch('data/news.js', { method: 'HEAD', cache: 'no-store' })
+      .then(r => {
+        const tag = r.ok && (r.headers.get('etag') || r.headers.get('last-modified'));
+        if (!tag || tag === watch.tag) return false;
+        if (watch.tag === null) {
+          /* 처음 물을 때는 지금 보이는 뉴스가 서버 것과 같은지 모른다. 서버 파일이 보이는 수집보다
+             한참 뒤에 올라왔으면(그 사이 새로 수집) 받고, 아니면 이 값을 기준으로 삼는다 */
+          const newer = Date.parse(r.headers.get('last-modified') || '') - Date.parse(NewsData.generatedAt || '');
+          if (!(newer > NEWER_GAP)) { watch.tag = tag; return false; }
+        }
+        return refreshData().then(ok => { if (ok) watch.tag = tag; return ok; });
+      })
+      .catch(() => false)
+      .then(changed => {
+        renderBanner();   // "N분 전 수집" 글자만 고친다 (다시 그리지 않는다)
+        scheduleCheck(nextDelay(changed));
+        return changed;
+      });
+  }
+
+  /** 이번에 새로 들어온 속보(띠로 그리는 칸)에 "새" 표시를 붙인다. 처음 열 때는 붙이지 않는다 */
+  function markFresh(before) {
+    const now = Date.now();
+    NewsData.articles.forEach(a => {
+      const cat = NewsData.category(a.category);
+      if (cat && cat.wide && !before.has(a.id)) fresh.set(a.id, now);
+    });
   }
 
   /* ---------- 뉴스 다시 받기 ----------
@@ -375,6 +443,7 @@
     if (btn.getAttribute('aria-busy') === 'true') return Promise.resolve(false);
     btn.setAttribute('aria-busy', 'true');
     btn.textContent = '새로고침 중…';
+    const before = new Set(NewsData.articles.map(a => a.id));
     return new Promise(resolve => {
       const s = document.createElement('script');
       s.src = 'data/news.js?t=' + Date.now();
@@ -383,7 +452,14 @@
         btn.removeAttribute('aria-busy');
         /* 오프라인이면 서비스 워커가 마지막으로 받은 뉴스를 돌려준다. 그 사실을 알린다. */
         btn.textContent = ok && navigator.onLine !== false ? '새로고침' : '연결 안 됨 · 다시 시도';
-        if (ok) { loadedAt = Date.now(); renderBanner(); render(); }
+        if (ok) {
+          markFresh(before);
+          /* 손으로 받은 경우 서버 값과 맞춰 둔 기준을 버린다. 다음 확인 때 다시 잡는다 */
+          watch.tag = null;
+          watch.lastCheck = Date.now();
+          renderBanner();
+          render();
+        }
         resolve(ok);
       };
       s.onload = () => done(true);
@@ -434,7 +510,10 @@
   }
 
   /* 테스트에서 내부 상태를 확인할 수 있도록 노출한다 */
-  global.__app = { state, base, filtered, relTime, matches, render, init, PAGE, APP_MODE, refreshData };
+  global.__app = {
+    state, base, filtered, relTime, matches, render, init, PAGE, APP_MODE, refreshData,
+    WATCH, watch, fresh, checkForNews, BAND_WIDE, BAND_NARROW,
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

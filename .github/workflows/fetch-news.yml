@@ -1,4 +1,5 @@
-# 뉴스를 모아 사이트에 올린다. 한 번 돌 때마다 약 15분 뒤의 다음 차례를 스스로 부른다.
+# 뉴스를 모아 사이트에 올린다. 한 번 돌 때마다 약 5분 뒤의 다음 차례를 스스로 부른다.
+# (2026-10-01 속보를 빨리 띄우려고 15분 → 5분으로 줄였다. 화면은 보이는 동안만 "바뀌었나"를 묻는다 — app.js)
 #
 # 왜 이 방식인가
 # - 브라우저에서 RSS 를 직접 받으면 CORS 에 막힌다. 수집은 서버 측(Actions 러너)에서 한다.
@@ -8,15 +9,16 @@
 # - GitHub 는 예약 실행을 보장하지 않는다. '*/30' 은 이틀간 9번(4~8시간 간격)만 돌았고,
 #   혼잡을 피해 7·22·37·52분으로 옮긴 뒤에도 첫 1시간 동안 한 번도 돌지 않았다 (2026-09-30).
 # - 수동 실행(workflow_dispatch)은 바로 돈다. 그래서 끝날 때마다 다음 차례를 부르고, 다음 차례는
-#   저장소 설정의 환경 news-interval 에 둔 대기 타이머(wait timer, 14분)만큼 기다린 뒤 수집한다.
+#   저장소 설정의 환경 news-interval 에 둔 대기 타이머(wait timer, 4분)만큼 기다린 뒤 수집한다.
 #   기다리는 동안에는 러너를 쓰지 않는다.
 # - 예약은 사슬이 끊겼을 때 다시 잇는 예비용으로만 남긴다.
 #
 # 쌓이는 것을 줄인다
 # - git 은 지난 커밋을 지울 수 없다(이력을 고쳐 써야 한다). 그래서 애초에 적게 넣는다.
 #   사이트에는 방금 모은 뉴스를 배포 산출물로만 올리고, 저장소 사본(data/news.js)은 하루 한 번만 커밋한다.
-#   (15분마다 커밋하면 한 해 약 290MB, 하루 한 번이면 약 3MB)
-# - 15분마다 생기는 배포 산출물은 1일 뒤 자동 삭제되고, 실행 기록·배포 기록은 하루 한 번 7일 지난 것을 지운다.
+#   (5분마다 커밋하면 한 해 약 840MB, 하루 한 번이면 약 3MB)
+# - 5분마다 생기는 배포 산출물은 1일 뒤 자동 삭제되고, 실행 기록·배포 기록은 한 시간에 한 번 7일 지난 것을 지운다.
+#   하루 한 번 몰아서 지우면 약 1,500번을 한꺼번에 요청해 GitHub API 한도(시간당 1,000회)를 넘는다.
 name: 뉴스 수집·배포
 
 on:
@@ -47,7 +49,7 @@ concurrency:
 
 jobs:
   wait:
-    # 앞 차례가 부른 실행만 기다린다. 대기 시간은 환경 news-interval 의 wait timer(14분)에 있다.
+    # 앞 차례가 부른 실행만 기다린다. 대기 시간은 환경 news-interval 의 wait timer(4분)에 있다.
     if: github.event_name == 'workflow_dispatch' && inputs.chain
     runs-on: ubuntu-latest
     environment: news-interval
@@ -60,7 +62,8 @@ jobs:
           waited=$(( $(date +%s) - $(date -d "$created" +%s) ))
           echo "기다린 시간: $((waited / 60))분 $((waited % 60))초"
           # 환경의 타이머가 사라지면 기다리지 않고 곧바로 다음 차례를 불러 끝없이 돈다. 여기서 사슬을 끊는다.
-          if [ "$waited" -lt 600 ]; then
+          # 타이머는 4분(240초)이다. 3분 미만이면 타이머가 없거나 줄어든 것으로 본다.
+          if [ "$waited" -lt 180 ]; then
             echo "::error::환경 news-interval 에 대기 타이머가 없다. 사슬을 멈춘다 (AGENTS.md 4항)."
             exit 1
           fi
@@ -72,6 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       daily: ${{ steps.daily.outputs.daily }}
+      hourly: ${{ steps.daily.outputs.hourly }}
     steps:
       # 기다리는 사이 올라온 커밋까지 배포하도록 main 최신본을 받는다. 하루 판단에 이력이 필요하다.
       - uses: actions/checkout@v4
@@ -100,13 +104,16 @@ jobs:
           path: _site
           retention-days: 1
 
-      - name: 하루 한 번 할 일인가
+      - name: 하루 한 번·한 시간에 한 번 할 일인가
         id: daily
         run: |
           last=$(git log -1 --format=%ct -- data/news.js)
           age=$(( $(date +%s) - ${last:-0} ))
           echo "저장소 사본은 $((age / 3600))시간 $((age % 3600 / 60))분 전에 커밋했다."
           echo "daily=$([ "$age" -ge 86400 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          # 약 5분마다 도므로 매시 0~4분에 시작한 차례가 대개 한 시간에 한 번이다.
+          # 어느 시간에 건너뛰거나 두 번 돌아도 괜찮다 — 다음 차례가 남은 것을 지우고, 두 번째는 지울 게 거의 없다.
+          echo "hourly=$([ "$((10#$(date -u +%M)))" -lt 5 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
       - name: 저장소 사본 커밋 (하루 한 번)
         if: steps.daily.outputs.daily == 'true'
@@ -154,10 +161,12 @@ jobs:
           exit 1
 
   cleanup:
-    # 하루 한 번(저장소 사본을 커밋하는 차례에) 7일 지난 실행 기록과 배포 기록을 지운다.
+    # 한 시간에 한 번 7일 지난 실행 기록과 배포 기록을 지운다. 한 번에 약 100번 요청한다
+    # (5분마다면 한 시간에 실행 약 12건·배포 기록 약 24건이 쌓이고, 배포 기록은 목록을 다 훑어야 한다).
+    # 하루 한 번으로 두면 한꺼번에 약 1,500번이라 GitHub API 한도(시간당 1,000회)를 넘어 일부가 남는다.
     # 실패해도 수집·배포·다음 차례에는 영향이 없다.
     needs: build
-    if: ${{ !cancelled() && needs.build.result == 'success' && needs.build.outputs.daily == 'true' }}
+    if: ${{ !cancelled() && needs.build.result == 'success' && needs.build.outputs.hourly == 'true' }}
     continue-on-error: true
     runs-on: ubuntu-latest
     env:

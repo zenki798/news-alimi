@@ -100,25 +100,9 @@
   .chip[aria-pressed="true"]{border-color:var(--c); background:color-mix(in srgb, var(--c) 16%, var(--card)); color:#fff}
   .chip[aria-pressed="true"] .n{background:var(--c); color:#0b1017; font-weight:700}
 
-  /* ---- 주요 뉴스 스트립 ---- */
-  #headline{
-    display:flex; gap:14px; align-items:flex-start;
-    background:linear-gradient(90deg, rgba(255,77,109,.10), transparent 70%);
-    border:1px solid rgba(255,77,109,.28); border-radius:12px;
-    padding:13px 16px; margin-bottom:16px;
-  }
-  .hl-label{
-    flex:0 0 auto; background:#ff4d6d; color:#fff; font-weight:800; font-size:11.5px;
-    border-radius:5px; padding:3px 8px; margin-top:2px; letter-spacing:.04em;
-  }
-  #headline ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:5px; flex:1 1 auto; min-width:0}
-  #headline li{display:flex; gap:10px; align-items:baseline; border-left:2px solid var(--c); padding-left:9px}
-  /* min-width:0 이 없으면 긴 제목이 줄지 않아 시각이 상자 밖으로 밀려난다 */
-  #headline a{color:var(--tx); text-decoration:none; font-weight:600; font-size:14.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0}
-  #headline a:hover{color:var(--accent)}
-  #headline time{flex:0 0 auto; margin-left:auto; font-size:11.5px; color:var(--dim); font-variant-numeric:tabular-nums}
-
-  /* ---- 대시보드 보기 ---- */
+  /* ---- 대시보드 보기 ----
+     맨 위에서 눈을 끄는 빨간 상자는 주요 속보 띠 하나뿐이다. 예전의 "주요" 칸은 띠와 시선을 나눠 가져서 없앴다.
+     끝없이 도는 애니메이션(animation: … infinite)은 쓰지 않는다. 화면을 계속 다시 그려 휴대폰 배터리를 쓴다. */
   .dash{display:grid; grid-template-columns:repeat(auto-fill,minmax(232px,1fr)); gap:12px; align-items:start}
   .col{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:13px 14px}
   .col header{display:flex; align-items:center; gap:8px; margin-bottom:9px; padding-bottom:8px; border-bottom:1px solid var(--line)}
@@ -136,6 +120,10 @@
      auto-fit: 칼럼당 4건이면 4칸이 폭을 나눠 쓴다 (auto-fill 이면 다섯째 칸이 비어 보인다) */
   .col.wide{grid-column:1 / -1; border-color:color-mix(in srgb, var(--c) 45%, var(--line))}
   .col.wide ol{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px 18px}
+  /* 띠의 긴 제목은 두 줄까지만. 한 건이 길어지면 띠 전체가 높아져 아래 분야 칸을 밀어낸다 */
+  .col.wide li a{display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; overflow:hidden}
+  /* 열어 둔 사이 새로 들어온 속보 표시. 깜빡이지 않는다 */
+  .col .new{display:inline-block; margin-right:6px; padding:0 5px; border-radius:4px; background:var(--c); color:#fff; font-size:10.5px; font-weight:800; line-height:1.6; vertical-align:1px}
   .col .more{
     width:100%; margin-top:10px; padding:6px; font-size:12px; color:var(--dim);
     background:transparent; border:1px dashed var(--line);
@@ -149,7 +137,6 @@
   .card.read{opacity:.5}
   .meta{display:flex; align-items:center; gap:9px; font-size:11.5px; color:var(--dim); margin-bottom:8px; flex-wrap:wrap}
   .meta .cat{color:var(--c); font-weight:700}
-  .meta .hot{background:#ff4d6d; color:#fff; font-weight:700; border-radius:4px; padding:1px 6px; font-size:10.5px}
   .meta .src{margin-left:auto}
   .card h3{margin:0 0 8px; font-size:16px; line-height:1.42; font-weight:700}
   .card h3 a{color:var(--tx); text-decoration:none}
@@ -180,10 +167,6 @@
   @media (max-width:560px){
     .row .cat, .row .src{display:none}
     .stats{width:100%; margin-left:0}
-    #headline{flex-direction:column}
-    /* 세로로 쌓이면 align-items:flex-start 때문에 목록이 제목 길이만큼 넓어진다. 상자 폭에 맞춘다 */
-    #headline ul{align-self:stretch}
-    #headline time{margin-left:0}
   }
 </style>
 </head>
@@ -235,7 +218,6 @@
   </div>
 
   <div id="chips"></div>
-  <div id="headline" hidden></div>
 
   <div id="list" class="dash"></div>
   <button id="btnMore" hidden></button>

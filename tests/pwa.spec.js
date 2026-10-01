@@ -153,31 +153,8 @@ test.describe('앱 모드 (홈 화면에서 실행)', () => {
     await expect(page.locator('#totalCount')).toHaveText(total);
   });
 
-  test('앱으로 10분 넘게 지나 돌아오면 저절로 새 뉴스를 받는다 (브라우저 탭에서는 안 받는다)', async ({ page }) => {
-    let hits = 0;
-    await page.route(/\/data\/news\.js\?t=\d+$/, r => {
-      hits++;
-      r.fulfill({ contentType: 'text/javascript; charset=utf-8', body: freshNewsJs('돌아오니 들어와 있는 기사') });
-    });
-    const comeBack = async () => {
-      await page.clock.fastForward('11:00');
-      await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
-    };
-
-    await page.clock.install();
-    await open(page);                 // 브라우저 탭
-    await comeBack();
-    await page.waitForTimeout(300);
-    expect(hits).toBe(0);
-
-    await openApp(page);              // 앱
-    await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
-    await page.waitForTimeout(300);
-    expect(hits).toBe(0);             // 방금 열었으면 다시 받지 않는다
-    await comeBack();
-    await expect(page.locator('#list')).toContainText('돌아오니 들어와 있는 기사');
-    expect(hits).toBe(1);
-  });
+  /* 예전 검사 "앱으로 10분 넘게 지나 돌아오면 받는다 (브라우저 탭에서는 안 받는다)" 는 없앴다(2026-10-01).
+     이제 앱·브라우저 모두 화면이 보이는 동안 "바뀌었나"만 묻고 바뀌었을 때 받는다 — tests/live.spec.js 에서 본다. */
 });
 
 test.describe('설치 안내 (브라우저로 볼 때)', () => {
