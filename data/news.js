@@ -4,7 +4,7 @@
 (function (g) {
   var d = {
     "isMock": false,
-    "generatedAt": "2026-10-01T09:49:48.796Z",
+    "generatedAt": "2026-10-01T10:54:48.324Z",
     "categories": [
       {
         "key": "breaking",
@@ -74,26 +74,570 @@
     ],
     "articles": [
       {
-        "category": "politics",
-        "source": "뉴시스",
-        "title": "'응급실 뺑뺑이' 없앤다…우선수용병원 지정·의료진 처벌 면제",
-        "summary": "응급환자가 제때 치료받을 곳을 찾지 못하는 이른바 '응급실 뺑뺑이'를 막고 신속하게 최종진료까지 받을 수 있도록 하는 법 개정안이 통과됐다. 보건복지부는 1일 이 같은 내용의 '응급의료에 관한 법률' 일부개정안이 국회 본회의를 통과했다고 밝혔다.",
-        "url": "https://www.newsis.com/view/NISX20261001_0003811427",
-        "publishedAt": "2026-10-01T09:47:31.000Z",
+        "category": "world",
+        "source": "연합뉴스",
+        "title": "소 먹일 풀 키우던 네덜란드 습지, 기후변화에 사상 첫 벼농사",
+        "summary": "소에게 먹일 풀을 재배하는 용도로 쓰이던 네덜란드 습지가 기후변화로 인한 온난화와 맞물려 벼 농사를 위한 ...",
+        "url": "https://www.yna.co.kr/view/AKR20261001191000098",
+        "publishedAt": "2026-10-01T10:48:43.000Z",
         "importance": 3,
-        "id": "politics-NISX20261001_0003811427",
+        "id": "world-AKR20261001191000098",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "globalecon",
+        "source": "뉴시스",
+        "title": "[올댓차이나] 대만 증시, 韓美 반도체 호조에 0.86%↑ 상승 마감…1주 만에 사상최고 경신",
+        "summary": "대만 타이베이 증시는 1일 미국 반도체사 마이크론 테크놀로지의 실적 호조와 한국 9월 반도체 수출이 3배나 급증했다는 소식에 주력 반도체 관련주 중심으로 매수 선행하면서 이틀째 상승 마감했다.",
+        "url": "https://www.newsis.com/view/NISX20261001_0003811534",
+        "publishedAt": "2026-10-01T10:48:42.000Z",
+        "importance": 3,
+        "id": "globalecon-NISX20261001_0003811534",
         "keywords": [],
         "points": []
       },
       {
         "category": "society",
         "source": "뉴시스",
+        "title": "중수청 초대 지휘부에 특검 출신 포진…\"수사 경험 고려한 선발\"",
+        "summary": "출범을 하루 앞두고 중대범죄수사청(중수청)이 1~5급 수사관들의 근무지를 배정하는 등 총 정원 3분의 2 규모로 닻을 올린다. 지휘부로 꼽히는 1·2급 인사 명단도 전격 공개됐는데, 이재명 정부 시기 특별검사팀에 몸담았던 이들이 지휘부로 전면 배치돼 주목된다.",
+        "url": "https://www.newsis.com/view/NISX20261001_0003811499",
+        "publishedAt": "2026-10-01T10:47:52.000Z",
+        "importance": 3,
+        "id": "society-NISX20261001_0003811499",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "invest",
+        "source": "연합인포맥스",
+        "title": "씨티 \"달러-원 1,300원 아래로 빠르게 내리면 당국 매수 가능\"",
+        "summary": "씨티는 달러-원 환율이 1,300원 아래로 빠르게 하락할 경우 외환당국이 현물환 시장에서 달러를 매수할 수 있다고 평가했다. 김진욱 한국씨티은행 수석이코노미스트는 1일 발표한 보고서에서 \"당사 추정으로는 외환당국이 과거 달러-원 환율이 1,250원 안팎 또는 그 이하일 때 현물환 시장에서 달러를 매수했을 가능성이…",
+        "url": "https://news.einfomax.co.kr/news/articleView.html?idxno=4437459",
+        "publishedAt": "2026-10-01T10:45:27.000Z",
+        "importance": 3,
+        "id": "invest-4437459",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "globalecon",
+        "source": "연합인포맥스",
+        "title": "유로존 9월 제조업 PMI 52.9…52개월 만에 최고(상보)",
+        "summary": "유로존 제조업 경기는 지난달에도 확장세를 이어갔다.1일 스탠더드앤드푸어스(S&P) 글로벌에 따르면 유로존의 9월 제조업 구매관리자지수(PMI)는 52.9로 집계돼 52개월 만에 최고치를 기록했다. 경기 확장과 위축을 가르는 기준선인 50.0을 웃돌며 예비치였던 52.7도 넘어섰다.",
+        "url": "https://news.einfomax.co.kr/news/articleView.html?idxno=4437458",
+        "publishedAt": "2026-10-01T10:43:11.000Z",
+        "importance": 2,
+        "id": "globalecon-4437458",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "sports",
+        "source": "연합뉴스",
+        "title": "[아시안게임] 레슬링 김다현, 동메달 결정전서 석패…메달 실패",
+        "summary": "레슬링 국가대표 김다현(국군체육부대)이 2026 아이치·나고야 아시안게임에서 아쉽게 메달 획득에 실패했다.",
+        "url": "https://www.yna.co.kr/view/AKR20261001190800007",
+        "publishedAt": "2026-10-01T10:38:39.000Z",
+        "importance": 3,
+        "id": "sports-AKR20261001190800007",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "sports",
+        "source": "연합뉴스",
+        "title": "대한당구연맹 신임 회장에 강진모 당선…득표율 90.37%",
+        "summary": "강진모(58) 후보자가 제4대 대한당구연맹 회장으로 선출됐다.",
+        "url": "https://www.yna.co.kr/view/AKR20261001190400007",
+        "publishedAt": "2026-10-01T10:35:02.000Z",
+        "importance": 2,
+        "id": "sports-AKR20261001190400007",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "world",
+        "source": "연합뉴스",
+        "title": "미국, 프랑스·독일에 \"경유 방출 안하면 수출금지\" 경고",
+        "summary": "미국 도널드 트럼프 행정부가 프랑스와 독일에 비축 경유 방출을 압박했으며, 이를 이행하지 않으면 미국산 경유 ...",
+        "url": "https://www.yna.co.kr/view/AKR20261001190600009",
+        "publishedAt": "2026-10-01T10:34:28.000Z",
+        "importance": 2,
+        "id": "world-AKR20261001190600009",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "sports",
+        "source": "연합뉴스",
+        "title": "[아시안게임] 스포츠클라이밍 '간판' 서채현, 볼더링 동메달 수확…2연속 메달",
+        "summary": "한국 여자 스포츠클라이밍의 '간판' 서채현(서울시청·노스페이스)이 두 대회 연속 아시안게임 메달을 수확했다.",
+        "url": "https://www.yna.co.kr/view/AKR20261001190200007",
+        "publishedAt": "2026-10-01T10:33:54.000Z",
+        "importance": 2,
+        "id": "sports-AKR20261001190200007",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "sports",
+        "source": "연합뉴스",
+        "title": "[아시안게임] 무릎 안 굽혀져도 버틴 이준환, 주특기 없이 따낸 값진 동메달",
+        "summary": "유도 국가대표 이준환(포항시청)은 국내에서 업어치기를 가장 잘 구사하는 선수로 꼽힌다.",
+        "url": "https://www.yna.co.kr/view/AKR20261001190100007",
+        "publishedAt": "2026-10-01T10:33:14.000Z",
+        "importance": 1,
+        "id": "sports-AKR20261001190100007",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "society",
+        "source": "뉴시스",
+        "title": "\"해외여행 감염병·건강정보 한눈에\"…'여행건강알림e' 개시",
+        "summary": "질병관리청이 해외여행지의 감염병 정보와 예방수칙, 검역정보 등을 편리하게 확인할 수 있는 '여행건강알림e'를 1일부터 통합 운영한다.",
+        "url": "https://www.newsis.com/view/NISX20261001_0003810500",
+        "publishedAt": "2026-10-01T10:31:52.000Z",
+        "importance": 2,
+        "id": "society-NISX20261001_0003810500",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "society",
+        "source": "연합뉴스",
+        "title": "광주도시철도 2호선 개통 또 연기…1단계 2028년·2단계 2035년",
+        "summary": "광주 도시철도 2호선 1단계 개통이 또다시 미뤄져 2028년 말에야 가능할 것으로 전망됐다.",
+        "url": "https://www.yna.co.kr/view/AKR20261001189100054",
+        "publishedAt": "2026-10-01T10:31:41.000Z",
+        "importance": 2,
+        "id": "society-AKR20261001189100054",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "it",
+        "source": "전자신문",
+        "title": "미래엔, 창업 100주년 맞아 기념 사료 수집 캠페인",
+        "summary": "미래엔이 창업 100주년을 기념해 12월 31일까지 '미래엔 창업 100주년 기념 사료 수집 캠페인'을 진행한다. 창업자 우석 김기오 선생이 1926년 양산인쇄소를 설립해 인쇄업을 시작한 지 100주년을 맞았다.",
+        "url": "https://www.etnews.com/20261001000494",
+        "publishedAt": "2026-10-01T10:31:11.000Z",
+        "importance": 3,
+        "id": "it-20261001000494",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "society",
+        "source": "뉴시스",
+        "title": "\"어? 찍히고 있네\"…빈집털이범, 홈캠 보자 얼굴 가리고 전원 '뚝'",
+        "summary": "주택에 침입한 남성이 홈캠을 발견하자 얼굴을 가리고 전원까지 끄는 모습이 포착된 가운데, 해당 남성은 연쇄 빈집털이범인 것으로 전해졌다. 최근 방송된 JTBC '사건반장'에서는 제주 지역 빈집에 침입해 금품을 훔친 남성의 모습이 담긴 홈캠 영상이 공개됐다.",
+        "url": "https://www.newsis.com/view/NISX20261001_0003809931",
+        "publishedAt": "2026-10-01T10:30:00.000Z",
+        "importance": 1,
+        "id": "society-NISX20261001_0003809931",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "society",
+        "source": "연합뉴스",
+        "title": "경찰, 동대문구 통일단체 압수수색…국가보안법 위반 혐의",
+        "summary": "경찰이 동대문구에 사무실을 둔 통일 단체를 국가보안법 위반 혐의로 1일 압수수색했다.",
+        "url": "https://www.yna.co.kr/view/AKR20261001190000004",
+        "publishedAt": "2026-10-01T10:28:55.000Z",
+        "importance": 1,
+        "id": "society-AKR20261001190000004",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "politics",
+        "source": "연합뉴스",
+        "title": "김은혜 \"北 지뢰매설 때 정부 대북철도지원 위한 지뢰제거 논의\"(종합)",
+        "summary": "지난해 북한이 접경지역 군사분계선 일대에 지뢰를 매설한 것으로 추정되는 시점에 정부는 남북 철도 복원 사업 재...",
+        "url": "https://www.yna.co.kr/view/AKR20261001148751001",
+        "publishedAt": "2026-10-01T10:27:43.000Z",
+        "importance": 3,
+        "id": "politics-AKR20261001148751001",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "it",
+        "source": "전자신문",
+        "title": "웅진씽크빅, 유·초등 맞춤형 독서 성장 'KRS' 서비스 개시",
+        "summary": "웅진씽크빅이 유·초등 맞춤형 독서 성장 플랫폼 'KRS(Korea Reading System)' 정식 서비스를 1일 시작했다. 이용자는 KRS 진단 결과를 바탕으로 한 개인별 독서 레벨과 커리큘럼에 맞춰 책을 읽고 독후 퀴즈, 독후 활동 등 다양한 독서 콘텐츠를 이용할 수 있다.",
+        "url": "https://www.etnews.com/20261001000493",
+        "publishedAt": "2026-10-01T10:23:00.000Z",
+        "importance": 2,
+        "id": "it-20261001000493",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "econ",
+        "source": "연합뉴스",
+        "title": "제주 5성급 호텔서 59명 염소가스 흡입…조선호텔 \"깊이 사과\"(종합2보)",
+        "summary": "조선호텔앤리조트가 운영하는 제주 서귀포시의 5성급 호텔 그랜드 조선 제주에서 염소가스가 발생해 투숙객과...",
+        "url": "https://www.yna.co.kr/view/AKR20261001114152030",
+        "publishedAt": "2026-10-01T10:19:26.000Z",
+        "importance": 3,
+        "id": "econ-AKR20261001114152030",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "society",
+        "source": "연합뉴스",
+        "title": "제주 5성급 호텔서 59명 염소가스 흡입…조선호텔 \"깊이 사과\"(종합2보)",
+        "summary": "조선호텔앤리조트가 운영하는 제주 서귀포시의 5성급 호텔 그랜드 조선 제주에서 염소가스가 발생해 투숙객과...",
+        "url": "https://www.yna.co.kr/view/AKR20261001114152030",
+        "publishedAt": "2026-10-01T10:19:26.000Z",
+        "importance": 1,
+        "id": "society-AKR20261001114152030",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "politics",
+        "source": "뉴시스",
+        "title": "외교부 \"대미투자, 안보협의 진전 기대\"…스틸 美대사 \"저희도 소매 걷겠다\"(종합)",
+        "summary": "외교부는 1일 도널드 트럼프 미국 대통령의 한국 대미투자 프로젝트 발표를 계기로 핵추진잠수함 등 한미 간 안보협의도 진전이 이뤄지길 기대한다고 밝혔다.",
+        "url": "https://www.newsis.com/view/NISX20261001_0003811521",
+        "publishedAt": "2026-10-01T10:17:52.000Z",
+        "importance": 2,
+        "id": "politics-NISX20261001_0003811521",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "it",
+        "source": "전자신문",
+        "title": "'모두의 AI 실험실' 경진대회 390개 아이디어 모여…12팀 본선행",
+        "summary": "과학기술정보통신부가 한국지능정보사회진흥원(NIA)과 '모두의 AI 실험실 AI 서비스 경진대회' 본선 12개팀을 선정하고 1일 본선 진출 발대식을 개최했다. 경진대회는 8월 시작된 '모두의 AI 성장사다리 프로젝트' 일환이다.",
+        "url": "https://www.etnews.com/20261001000492",
+        "publishedAt": "2026-10-01T10:16:55.000Z",
+        "importance": 2,
+        "id": "it-20261001000492",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "sports",
+        "source": "연합뉴스",
+        "title": "SSG 김재환, 개인 통산 300홈런 폭발…역대 18번째",
+        "summary": "국내 프로야구의 대표적인 거포 중 한 명인 김재환(38·SSG 랜더스)이 300홈런 고지에 올랐다.",
+        "url": "https://www.yna.co.kr/view/AKR20261001188800007",
+        "publishedAt": "2026-10-01T10:12:30.000Z",
+        "importance": 1,
+        "id": "sports-AKR20261001188800007",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "society",
+        "source": "뉴시스",
+        "title": "[단독]강호동 농협회장 비서 구속…'고가 기념품 공금 구매' 관련",
+        "summary": "고가의 기념품을 공금으로 구매해 전달했다는 의혹과 관련해 강호동 농협중앙회장의 비서가 구속된 것으로 파악됐다. 1일 뉴시스 취재를 종합하면 서울중앙지법 이지영 영장전담 부장판사는 전날 업무상 횡령 혐의를 받는 농협중앙회 비서실 직원 차모씨에 대해 구속 전 피의자 심문을 진행한 뒤…",
+        "url": "https://www.newsis.com/view/NISX20261001_0003811334",
+        "publishedAt": "2026-10-01T10:11:38.000Z",
+        "importance": 1,
+        "id": "society-NISX20261001_0003811334",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "invest",
+        "source": "연합인포맥스",
+        "title": "日 총리 \"정부 노력이 엔화에 대한 시장 신뢰 강화할 것\"(상보)",
+        "summary": "다카이치 사나에 일본 총리가 일본 정부의 노력이 엔화에 대한 시장 신뢰를 높이는 데 도움이 될 것이라고 밝혔다.1일 닛폰TV가 방영한 녹화 인터뷰에 따르면 다카이치 총리는 \"우리 정책은 환율을 조작하려는 것이 아니며 일본 경제의 경쟁력 강화를 목표로 한다\"며 이같이 말했다.",
+        "url": "https://news.einfomax.co.kr/news/articleView.html?idxno=4437457",
+        "publishedAt": "2026-10-01T10:10:53.000Z",
+        "importance": 2,
+        "id": "invest-4437457",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "society",
+        "source": "뉴시스",
+        "title": "尹 \"2차 계엄선포 논의는 비상식적\"…이재명·김민석 월담 영상도 공개(종합)",
+        "summary": "내란 우두머리 혐의 항소심 재판에서 윤석열 전 대통령이 국회의 계엄 해제 요구 결의안 가결 후에도 군에 추가 병력 투입을 지시하는 등 이른바 '2차 계엄'에 대한 논의가 없었다고 강조했다.",
+        "url": "https://www.newsis.com/view/NISX20261001_0003811515",
+        "publishedAt": "2026-10-01T10:10:38.000Z",
+        "importance": 1,
+        "id": "society-NISX20261001_0003811515",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "society",
+        "source": "뉴시스",
+        "title": "무연고 사망자 정보 노출?…복지부 \"개인정보 유출은 없어\"",
+        "summary": "보건복지부가 장사정보시스템 'e하늘'에 무연고 사망자와 유족 정보가 노출됐다는 보도 관련 \"개인정보 노출 우려가 있어 대상자 안내 등 대응조치를 취했다\"며 \"사실 확인 결과 개인정보 유출은 없는 것으로 확인됐다\"고 밝혔다.",
+        "url": "https://www.newsis.com/view/NISX20261001_0003811509",
+        "publishedAt": "2026-10-01T10:09:47.000Z",
+        "importance": 1,
+        "id": "society-NISX20261001_0003811509",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "world",
+        "source": "연합뉴스",
+        "title": "\"러 파병 북한군 지휘관, 우크라 비정부단체 '위협 인물' 명단에\"",
+        "summary": "우크라이나와 전쟁 중인 러시아에 파병된 북한군을 지휘한 것으로 알려진 북한군 간부가 우크라이나 비정부단체가 ...",
+        "url": "https://www.yna.co.kr/view/AKR20261001185600109",
+        "publishedAt": "2026-10-01T10:07:59.000Z",
+        "importance": 2,
+        "id": "world-AKR20261001185600109",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "econ",
+        "source": "한국경제",
+        "title": "에쓰오일, '올해의 시민영웅' 시상식",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100186031",
+        "publishedAt": "2026-10-01T10:03:14.000Z",
+        "importance": 2,
+        "id": "econ-2026100186031",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "society",
+        "source": "연합뉴스",
+        "title": "광주 장애인단체, 통합시청사 점거 농성 자진 해산",
+        "summary": "광주지역 장애인자립생활센터 지원 예산 증액을 요구하며 전남광주통합특별시청 광주청사 안팎에서 농성을 벌여온 ...",
+        "url": "https://www.yna.co.kr/view/AKR20261001176700054",
+        "publishedAt": "2026-10-01T10:02:53.000Z",
+        "importance": 1,
+        "id": "society-AKR20261001176700054",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "society",
+        "source": "뉴시스",
+        "title": "화성 포장지 제조공장서 화재, 초진…1명 화상·4명 대피",
+        "summary": "1일 오후 5시17분께 경기 화성시 만세구 팔탄면의 한 포장지 제조공장에서 화재가 발생했다. 불이 났다는 관계자 신고를 접수한 소방당국은 장비 29대와 인력 73명을 동원해 화재 진압에 나섰다. 이어 50여분만인 오후 6시10분께 초진에 성공했다.",
+        "url": "https://www.newsis.com/view/NISX20261001_0003811512",
+        "publishedAt": "2026-10-01T10:02:46.000Z",
+        "importance": 1,
+        "id": "society-NISX20261001_0003811512",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "politics",
+        "source": "연합뉴스",
+        "title": "우크라이나 전역에 대규모 공습…외교부, 안전대책 점검",
+        "summary": "외교부는 1일 우크라이나 현지 정세와 우리 국민 안전대책을 점검했다고 밝혔다.",
+        "url": "https://www.yna.co.kr/view/AKR20261001187100504",
+        "publishedAt": "2026-10-01T10:01:58.000Z",
+        "importance": 2,
+        "id": "politics-AKR20261001187100504",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "world",
+        "source": "연합뉴스",
+        "title": "우크라이나 전역에 대규모 공습…외교부, 안전대책 점검",
+        "summary": "외교부는 1일 우크라이나 현지 정세와 우리 국민 안전대책을 점검했다고 밝혔다.",
+        "url": "https://www.yna.co.kr/view/AKR20261001187100504",
+        "publishedAt": "2026-10-01T10:01:58.000Z",
+        "importance": 1,
+        "id": "world-AKR20261001187100504",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "society",
+        "source": "뉴시스",
+        "title": "경찰청, 中대사관에 '시진핑 중식당 테러' 피의자 검거 협조 요청",
+        "summary": "경찰이 중국으로 도주한 이른바 '시진핑 중식당 래커 테러' 사건 피의자들을 검거하기 위해 주한 중국대사관에도 협조를 요청했다. 1일 경찰에 따르면 경찰청은 최근 해당 사건 피의자 4명의 신병 확보를 위해 인터폴 적색수배 절차를 밟는 한편, 주한 중국대사관 측에도 검거 협조를 요청했다.",
+        "url": "https://www.newsis.com/view/NISX20261001_0003811507",
+        "publishedAt": "2026-10-01T10:00:14.000Z",
+        "importance": 1,
+        "id": "society-NISX20261001_0003811507",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "econ",
+        "source": "한국경제",
+        "title": "英서 빛난 '이건희 컬렉션'…이재용 \"韓문화 이해하는 계기 되길\"",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100186081",
+        "publishedAt": "2026-10-01T10:00:03.000Z",
+        "importance": 2,
+        "id": "econ-2026100186081",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "politics",
+        "source": "뉴시스",
+        "title": "정부, 공공부문 AI 윤리기준 확정…\"최종 책임은 사람이\"",
+        "summary": "행정안전부는 공공부문 인공지능(AI) 도입 확대에 발맞춰 책임성 등 6대 핵심 가치를 담은 '공공부문 AI 윤리기준'을 최종 확정했다고 1일 밝혔다.",
+        "url": "https://www.newsis.com/view/NISX20261001_0003810577",
+        "publishedAt": "2026-10-01T10:00:00.000Z",
+        "importance": 1,
+        "id": "politics-NISX20261001_0003810577",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "society",
+        "source": "연합뉴스",
+        "title": "공공부문 AI 윤리기준 확정…\"최종 책임·통제는 사람에게\"",
+        "summary": "복지대상자 선정이나 인허가 등 국민의 권리와 생활에 영향을 미치는 행정업무에 인공지능(AI)을 활용하더라도 최...",
+        "url": "https://www.yna.co.kr/view/AKR20261001171400530",
+        "publishedAt": "2026-10-01T10:00:00.000Z",
+        "importance": 1,
+        "id": "society-AKR20261001171400530",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "society",
+        "source": "뉴시스",
+        "title": "정부, 공공부문 AI 윤리기준 확정…\"최종 책임은 사람이\"",
+        "summary": "행정안전부는 공공부문 인공지능(AI) 도입 확대에 발맞춰 책임성 등 6대 핵심 가치를 담은 '공공부문 AI 윤리기준'을 최종 확정했다고 1일 밝혔다.",
+        "url": "https://www.newsis.com/view/NISX20261001_0003810577",
+        "publishedAt": "2026-10-01T10:00:00.000Z",
+        "importance": 1,
+        "id": "society-NISX20261001_0003810577",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "estate",
+        "source": "한국경제",
+        "title": "건물주 돈 버는 시대 끝났다…상권 몸값 높이는 비결은",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100184861",
+        "publishedAt": "2026-10-01T09:53:18.000Z",
+        "importance": 2,
+        "id": "estate-2026100184861",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "estate",
+        "source": "한국경제",
+        "title": "\"청약 당첨돼도 대출 걱정…규제 완화를\"",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100184851",
+        "publishedAt": "2026-10-01T09:52:02.000Z",
+        "importance": 2,
+        "id": "estate-2026100184851",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "globalecon",
+        "source": "뉴시스",
+        "title": "9월 日 제조업 PMI 54.1·0.8P↓…\"반년 만에 저수준\"",
+        "summary": "일본 제조업 경기가 9월에도 확장세를 이어갔지만 생산과 신규 수주 증가세가 모두 둔화하면서 성장 탄력이 약해졌다. 트레이딩 이코노믹스와 인베스팅 닷컴, 야후재팬에 따르면 S&P 글로벌은 1일 2026년 9월 S&P 제조업 구매관리자 지수(PMI 확정치)가 54.1로 전월 54.9에서 0.8…",
+        "url": "https://www.newsis.com/view/NISX20261001_0003811501",
+        "publishedAt": "2026-10-01T09:50:30.000Z",
+        "importance": 2,
+        "id": "globalecon-NISX20261001_0003811501",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "estate",
+        "source": "한국경제",
+        "title": "\"식사·돌봄·의료 결합한 맞춤형 서비스 주택 늘려야\"",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100184831",
+        "publishedAt": "2026-10-01T09:50:13.000Z",
+        "importance": 2,
+        "id": "estate-2026100184831",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "popular",
+        "source": "Daum",
+        "title": "김현진 매니저 된 레드벨벳 조이…'유일무이 로맨스' 11월 공개",
+        "summary": "",
+        "url": "https://v.daum.net/v/zlumG2OcFV",
+        "publishedAt": "2026-10-01T09:50:00.000Z",
+        "topic": "티빙 · 검색 2천+",
+        "keywords": [
+          "티빙"
+        ],
+        "points": [],
+        "rank": 4,
+        "importance": 1,
+        "id": "popular-zlumG2OcFV"
+      },
+      {
+        "category": "estate",
+        "source": "한국경제",
+        "title": "\"출근한 아들 대신 왔다\", \"공부하려고 10년째 참가\"…박람회 이모저모",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100184771",
+        "publishedAt": "2026-10-01T09:48:37.000Z",
+        "importance": 1,
+        "id": "estate-2026100184771",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "politics",
+        "source": "뉴시스",
         "title": "'응급실 뺑뺑이' 없앤다…우선수용병원 지정·의료진 처벌 면제",
         "summary": "응급환자가 제때 치료받을 곳을 찾지 못하는 이른바 '응급실 뺑뺑이'를 막고 신속하게 최종진료까지 받을 수 있도록 하는 법 개정안이 통과됐다. 보건복지부는 1일 이 같은 내용의 '응급의료에 관한 법률' 일부개정안이 국회 본회의를 통과했다고 밝혔다.",
         "url": "https://www.newsis.com/view/NISX20261001_0003811427",
         "publishedAt": "2026-10-01T09:47:31.000Z",
-        "importance": 3,
-        "id": "society-NISX20261001_0003811427",
+        "importance": 1,
+        "id": "politics-NISX20261001_0003811427",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "estate",
+        "source": "한국경제",
+        "title": "보유 주택 수 정확히 아는 게 '절세 1원칙'",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100184801",
+        "publishedAt": "2026-10-01T09:47:28.000Z",
+        "importance": 1,
+        "id": "estate-2026100184801",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "politics",
+        "source": "연합뉴스",
+        "title": "韓총리 \"공직사회 AX혁신 앱마켓 연내 오픈 목표\"(종합)",
+        "summary": "한성숙 국무총리는 1일 \"공직자들이 직접 개발한 서비스를 모아 공직자들이 쉽게 다운받아 쓸 수 있는 AX(인공...",
+        "url": "https://www.yna.co.kr/view/AKR20261001130551001",
+        "publishedAt": "2026-10-01T09:47:09.000Z",
+        "importance": 1,
+        "id": "politics-AKR20261001130551001",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "estate",
+        "source": "한국경제",
+        "title": "롯데건설, ABS로 올 8000억 조달",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100184781",
+        "publishedAt": "2026-10-01T09:46:27.000Z",
+        "importance": 1,
+        "id": "estate-2026100184781",
         "keywords": [],
         "points": []
       },
@@ -104,8 +648,32 @@
         "summary": "2022년 주식과 함께 급락하며 ‘포트폴리오의 방어막’ 역할에 대한 신뢰가 흔들렸던 채권이 미국 투자자들의 관심을 다시 끌고 있다. 올해도 채권 가격은 떨어졌지만 그만큼 새로 채권을 사는 투자자가 기대할 수 있는 수익률은 20여년 만에 높은 수준으로 올라왔다.",
         "url": "https://www.newsis.com/view/NISX20261001_0003811494",
         "publishedAt": "2026-10-01T09:46:19.000Z",
-        "importance": 3,
+        "importance": 1,
         "id": "globalecon-NISX20261001_0003811494",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "estate",
+        "source": "한국경제",
+        "title": "서대문·노원 강세…강남은 0.56% 하락",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100184791",
+        "publishedAt": "2026-10-01T09:46:01.000Z",
+        "importance": 1,
+        "id": "estate-2026100184791",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "estate",
+        "source": "한국경제",
+        "title": "공공재개발 1주택자도 이주비 대출 연 2%P 지원",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100184841",
+        "publishedAt": "2026-10-01T09:45:06.000Z",
+        "importance": 1,
+        "id": "estate-2026100184841",
         "keywords": [],
         "points": []
       },
@@ -116,7 +684,7 @@
         "summary": "아시안게임 사상 첫 결승 진출의 꿈을 이루지 못한 채 동메달 결정전을 앞둔 한국 여자 축구 대표팀의 신상우 ...",
         "url": "https://www.yna.co.kr/view/AKR20261001186200007",
         "publishedAt": "2026-10-01T09:43:26.000Z",
-        "importance": 3,
+        "importance": 1,
         "id": "sports-AKR20261001186200007",
         "keywords": [],
         "points": []
@@ -128,7 +696,7 @@
         "summary": "스페인 국왕 부부가 대규모 이민자 월경 사태가 발생한 북아프리카의 자국 영토 세우타를 방문한다.",
         "url": "https://www.yna.co.kr/view/AKR20261001186000082",
         "publishedAt": "2026-10-01T09:41:24.000Z",
-        "importance": 3,
+        "importance": 1,
         "id": "world-AKR20261001186000082",
         "keywords": [],
         "points": []
@@ -146,14 +714,50 @@
         "points": []
       },
       {
+        "category": "econ",
+        "source": "한국경제",
+        "title": "[단독] 미소금융 연체채권 새도약기금에 넘긴다",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100185041",
+        "publishedAt": "2026-10-01T09:38:58.000Z",
+        "importance": 1,
+        "id": "econ-2026100185041",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "econ",
+        "source": "한국경제",
+        "title": "정몽윤의 뚝심…日서 13배 성장한 현대해상",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100185001",
+        "publishedAt": "2026-10-01T09:38:09.000Z",
+        "importance": 1,
+        "id": "econ-2026100185001",
+        "keywords": [],
+        "points": []
+      },
+      {
         "category": "sports",
         "source": "연합뉴스",
         "title": "삼성 구자욱, 허벅지 근육 손상 진단…가을야구 앞두고 '악재'",
         "summary": "가을야구를 눈앞에 둔 프로야구 삼성 라이온즈에 대형 악재가 닥쳤다.",
         "url": "https://www.yna.co.kr/view/AKR20261001185500007",
         "publishedAt": "2026-10-01T09:38:04.000Z",
-        "importance": 2,
+        "importance": 1,
         "id": "sports-AKR20261001185500007",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "econ",
+        "source": "한국경제",
+        "title": "신한은행, 2만5000명 고객정보 유출",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100185031",
+        "publishedAt": "2026-10-01T09:37:28.000Z",
+        "importance": 1,
+        "id": "econ-2026100185031",
         "keywords": [],
         "points": []
       },
@@ -164,8 +768,20 @@
         "summary": "이재명 대통령은 국군의 날인 1일 \"자주국방은 곧 주권\"이라며 \"앞으로 전시작전통제권(전작권) 환수로 그 마침표를 찍어 반세기 동안 이어져 온 그 꿈을 국민과 함께 반드시 실현해 내겠다\"고 밝혔다.",
         "url": "https://www.newsis.com/view/NISX20261001_0003811436",
         "publishedAt": "2026-10-01T09:37:27.000Z",
-        "importance": 2,
+        "importance": 1,
         "id": "politics-NISX20261001_0003811436",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "econ",
+        "source": "한국경제",
+        "title": "방글라데시 영업 30년…우리은행, 금융협력 확대",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100185021",
+        "publishedAt": "2026-10-01T09:37:11.000Z",
+        "importance": 1,
+        "id": "econ-2026100185021",
         "keywords": [],
         "points": []
       },
@@ -176,8 +792,32 @@
         "summary": "송민혁이 한국프로골프(KPGA) 투어 현대해상 최경주 인비테이셔널(총상금 12억5천만원) 첫날 깔끔한 플레이로...",
         "url": "https://www.yna.co.kr/view/AKR20261001185400007",
         "publishedAt": "2026-10-01T09:36:25.000Z",
-        "importance": 2,
+        "importance": 1,
         "id": "sports-AKR20261001185400007",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "econ",
+        "source": "한국경제",
+        "title": "로카티 팔고 공짜 햄버거 쏘고…국군의 날 '밀리터리 마케팅'",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100185191",
+        "publishedAt": "2026-10-01T09:35:18.000Z",
+        "importance": 1,
+        "id": "econ-2026100185191",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "econ",
+        "source": "한국경제",
+        "title": "파리크라상 신임 대표에 삼성전자 출신 강신봉 내정",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100185141",
+        "publishedAt": "2026-10-01T09:34:27.000Z",
+        "importance": 1,
+        "id": "econ-2026100185141",
         "keywords": [],
         "points": []
       },
@@ -194,14 +834,14 @@
         "points": []
       },
       {
-        "category": "society",
-        "source": "연합뉴스",
-        "title": "전종민 중수청 차장 \"모든 경험 쏟아 수사 잘하는 기관 만들 것\"",
-        "summary": "1일 중대범죄수사청(중수청) 초대 차장으로 임용 예정된 전종민(59·사법연수원 24기) 변호사는 30년...",
-        "url": "https://www.yna.co.kr/view/AKR20261001185000004",
-        "publishedAt": "2026-10-01T09:30:57.000Z",
-        "importance": 2,
-        "id": "society-AKR20261001185000004",
+        "category": "econ",
+        "source": "한국경제",
+        "title": "하이마트 \"타사 가전도 수리해 드려요\"",
+        "summary": "",
+        "url": "https://www.hankyung.com/article/2026100185151",
+        "publishedAt": "2026-10-01T09:34:00.000Z",
+        "importance": 1,
+        "id": "econ-2026100185151",
         "keywords": [],
         "points": []
       },
@@ -212,7 +852,7 @@
         "summary": "한성숙 국무총리는 1일 'AI 행정혁신 간담회'를 주재하고, 젊은 공직자들의 열정과 도전이 정부 전체의 AI 행정혁신으로 확산돼야 한다고 했다.",
         "url": "https://www.newsis.com/view/NISX20261001_0003811487",
         "publishedAt": "2026-10-01T09:30:40.000Z",
-        "importance": 2,
+        "importance": 1,
         "id": "politics-NISX20261001_0003811487",
         "keywords": [],
         "points": []
@@ -224,7 +864,7 @@
         "summary": "베트남에서 경제 중심지인 남부 호찌민과 수도인 북부 하노이 2곳으로 나뉘어 있던 주식 거래소가 연말께 호찌...",
         "url": "https://www.yna.co.kr/view/AKR20261001183400084",
         "publishedAt": "2026-10-01T09:29:24.000Z",
-        "importance": 2,
+        "importance": 1,
         "id": "world-AKR20261001183400084",
         "keywords": [],
         "points": []
@@ -242,49 +882,13 @@
         "points": []
       },
       {
-        "category": "society",
-        "source": "연합뉴스",
-        "title": "정부, 해외 기술유출 차단 논의…韓총리 \"처벌 실효성 강화\"",
-        "summary": "정부는 1일 한성숙 국무총리 주재로 정부서울청사에서 '해외 기술유출 방지 대책 회의'를 열어 반도체 등 핵심산...",
-        "url": "https://www.yna.co.kr/view/AKR20261001184700001",
-        "publishedAt": "2026-10-01T09:29:13.000Z",
-        "importance": 2,
-        "id": "society-AKR20261001184700001",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "society",
-        "source": "연합뉴스",
-        "title": "원주 봉산동서 아파트 화재…19명 대피·1명 경상",
-        "summary": "1일 오후 5시 34분께 강원 원주시 봉산동 한 15층짜리 아파트 10층에서 불이 났다.",
-        "url": "https://www.yna.co.kr/view/AKR20261001184900062",
-        "publishedAt": "2026-10-01T09:28:46.000Z",
-        "importance": 1,
-        "id": "society-AKR20261001184900062",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "society",
-        "source": "연합뉴스",
-        "title": "서울국제친선협회, 키르기스스탄 초청 연수 진행",
-        "summary": "사단법인 서울국제친선협회(회장 이순주)는 한국국제협력단(KOICA) 민관 협력사업의 하나로 키르기스스탄 디지털...",
-        "url": "https://www.yna.co.kr/view/AKR20261001182000371",
-        "publishedAt": "2026-10-01T09:26:12.000Z",
-        "importance": 1,
-        "id": "society-AKR20261001182000371",
-        "keywords": [],
-        "points": []
-      },
-      {
         "category": "world",
         "source": "연합뉴스",
         "title": "서울국제친선협회, 키르기스스탄 초청 연수 진행",
         "summary": "사단법인 서울국제친선협회(회장 이순주)는 한국국제협력단(KOICA) 민관 협력사업의 하나로 키르기스스탄 디지털...",
         "url": "https://www.yna.co.kr/view/AKR20261001182000371",
         "publishedAt": "2026-10-01T09:26:12.000Z",
-        "importance": 2,
+        "importance": 1,
         "id": "world-AKR20261001182000371",
         "keywords": [],
         "points": []
@@ -296,7 +900,7 @@
         "summary": "",
         "url": "https://www.hankyung.com/article/202610018344i",
         "publishedAt": "2026-10-01T09:24:30.000Z",
-        "importance": 2,
+        "importance": 1,
         "id": "econ-202610018344i",
         "keywords": [],
         "points": []
@@ -308,7 +912,7 @@
         "summary": "어려운 납세자의 세금 불복 절차를 돕는 국세청 국선대리인의 지원 실적이 2년 연속 감소한 것으로 집계됐다.",
         "url": "https://www.yna.co.kr/view/AKR20260930161151002",
         "publishedAt": "2026-10-01T09:24:00.000Z",
-        "importance": 3,
+        "importance": 1,
         "id": "econ-AKR20260930161151002",
         "keywords": [],
         "points": []
@@ -332,22 +936,74 @@
         "summary": "",
         "url": "https://www.hankyung.com/article/2026100185561",
         "publishedAt": "2026-10-01T09:20:01.000Z",
-        "importance": 2,
+        "importance": 1,
         "id": "econ-2026100185561",
         "keywords": [],
         "points": []
       },
       {
-        "category": "society",
-        "source": "연합뉴스",
-        "title": "화성 식품포장지 제조공장서 불…40대 직원 부상",
-        "summary": "1일 오후 5시 19분께 경기 화성시 만세구 팔탄면 하저리 한 식품포장지 제조공장에서 불이 났다.",
-        "url": "https://www.yna.co.kr/view/AKR20261001182600061",
+        "category": "popular",
+        "source": "Daum",
+        "title": "\"에콰도르가 한국에 진 건 컨디션 탓\" 日 모리야스 감독의 경계심, \"일본전에서는 완전히 다른 팀 될 것\"",
+        "summary": "",
+        "url": "https://v.daum.net/v/qko2BjpXSh",
         "publishedAt": "2026-10-01T09:20:00.000Z",
+        "topic": "일본 대 에콰도르 · 검색 2만+",
+        "keywords": [
+          "일본 대 에콰도르"
+        ],
+        "points": [],
+        "rank": 1,
+        "importance": 3,
+        "id": "popular-qko2BjpXSh"
+      },
+      {
+        "category": "popular",
+        "source": "Daum",
+        "title": "‘배구계 강동원’ 김요한, 11살 연하 오연희 업었다…“사귈지 끝낼지”",
+        "summary": "",
+        "url": "https://v.daum.net/v/1BXfY6Sr0X",
+        "publishedAt": "2026-10-01T09:20:00.000Z",
+        "topic": "김요한 · 검색 2천+",
+        "keywords": [
+          "김요한"
+        ],
+        "points": [],
+        "rank": 5,
         "importance": 1,
-        "id": "society-AKR20261001182600061",
-        "keywords": [],
-        "points": []
+        "id": "popular-1BXfY6Sr0X"
+      },
+      {
+        "category": "popular",
+        "source": "Daum",
+        "title": "“이제 끝이구나” 5km 급강하한 여객기…174명 살린 기내의 5분",
+        "summary": "",
+        "url": "https://v.daum.net/v/20261001185115807",
+        "publishedAt": "2026-10-01T09:20:00.000Z",
+        "topic": "부조종사 · 검색 2천+",
+        "keywords": [
+          "부조종사"
+        ],
+        "points": [],
+        "rank": 6,
+        "importance": 1,
+        "id": "popular-20261001185115807"
+      },
+      {
+        "category": "popular",
+        "source": "뉴시스",
+        "title": "'암살자(들)' 여파인가…부산영화제 이민호 행사 취소",
+        "summary": "",
+        "url": "https://www.newsis.com/view/NISX20261001_0003810275",
+        "publishedAt": "2026-10-01T09:20:00.000Z",
+        "topic": "부산국제영화제 · 검색 1천+",
+        "keywords": [
+          "부산국제영화제"
+        ],
+        "points": [],
+        "rank": 7,
+        "importance": 1,
+        "id": "popular-NISX20261001_0003810275"
       },
       {
         "category": "sports",
@@ -398,30 +1054,6 @@
         "points": []
       },
       {
-        "category": "society",
-        "source": "뉴시스",
-        "title": "역사속으로 사라지는 '검찰청'…간판철거에 \"울컥\"(종합)",
-        "summary": "검찰청이 역사 속으로 사라지고 공소청과 중대범죄수사청 출범하는 2일을 하루 앞두고 전국 검찰청에서 간판 교체 작업이 이어졌다. 검찰 직원 등은 발걸음을 멈춰 청사 외벽에서 내려오는 검찰 간판을 한동안 바라보거나 휴대전화로 촬영하며 마지막 모습을 지켜봤다.",
-        "url": "https://www.newsis.com/view/NISX20261001_0003811477",
-        "publishedAt": "2026-10-01T09:15:22.000Z",
-        "importance": 1,
-        "id": "society-NISX20261001_0003811477",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "society",
-        "source": "연합뉴스",
-        "title": "오월 단체 \"김태규 '전두환 내란 아니다' 발언 사과해야\"",
-        "summary": "5·18 3단체(유족회·부상자회·공로자회)와 5·18기념재단은 1일 \"국민의힘 김태규 의원은 전두환의 내란...",
-        "url": "https://www.yna.co.kr/view/AKR20261001182800054",
-        "publishedAt": "2026-10-01T09:14:54.000Z",
-        "importance": 1,
-        "id": "society-AKR20261001182800054",
-        "keywords": [],
-        "points": []
-      },
-      {
         "category": "ent",
         "source": "연합뉴스",
         "title": "톰 크루즈 \"오스카상보단 작품 우선…46년 영화 인생이 특권\"(종합)",
@@ -452,20 +1084,8 @@
         "summary": "인트(int.)는 LG CNS와 피지컬 AI 분야 인재 양성과 데이터 검증·학습 기술 공동 연구개발(R&D)에서 협력한다고 1일 밝혔다. 양측은 피지컬 AI 전문인재 발굴과 채용 연계, 산업 현장 중심의 피지컬 AI 데이터 구축·검증, 학습 데이터 품질 평가 지표 개발, 데이터 검증 자동화 기술 및 솔루션 연구개발 등을…",
         "url": "https://www.etnews.com/20261001000479",
         "publishedAt": "2026-10-01T09:13:34.000Z",
-        "importance": 3,
+        "importance": 1,
         "id": "it-20261001000479",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "invest",
-        "source": "연합인포맥스",
-        "title": "[외환-마감] 강달러 가로막는 네고물량…1,360원 안팎 흐름",
-        "summary": "달러-원 환율이 강달러 흐름을 가로막는 수출업체 네고물량 출회로 1,360원선 부근 움직임을 이어갔다.1일 서울 외환시장에서 달러-원 환율은 오후 3시 30분 현재 전장 대비 5.60원 오른 1,358.40원에 거래됐다. 달러-원은 1,358.50원으로 장을 연 뒤 오전 한때 1,363.00원까지 올랐다.",
-        "url": "https://news.einfomax.co.kr/news/articleView.html?idxno=4437450",
-        "publishedAt": "2026-10-01T09:13:31.000Z",
-        "importance": 3,
-        "id": "invest-4437450",
         "keywords": [],
         "points": []
       },
@@ -482,76 +1102,68 @@
         "points": []
       },
       {
-        "category": "econ",
-        "source": "한국경제",
-        "title": "韓이 고른 '투자 1호' 텍사스 AI용 발전소",
+        "category": "popular",
+        "source": "조선일보",
+        "title": "박정희재단·육영재단, ‘암살자(들)’ 대국민 사과 요구",
         "summary": "",
-        "url": "https://www.hankyung.com/article/2026100185781",
-        "publishedAt": "2026-10-01T09:10:40.000Z",
-        "importance": 1,
-        "id": "econ-2026100185781",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "econ",
-        "source": "한국경제",
-        "title": "'한국형 원전' 종주국 첫 수출…웨스팅하우스 지분 5~10% 인수",
-        "summary": "",
-        "url": "https://www.hankyung.com/article/2026100185791",
-        "publishedAt": "2026-10-01T09:10:07.000Z",
-        "importance": 1,
-        "id": "econ-2026100185791",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "econ",
-        "source": "한국경제",
-        "title": "전기차 공장 전환 인허가 3년 → 1년 단축",
-        "summary": "",
-        "url": "https://www.hankyung.com/article/2026100185091",
-        "publishedAt": "2026-10-01T09:09:41.000Z",
-        "importance": 1,
-        "id": "econ-2026100185091",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "econ",
-        "source": "한국경제",
-        "title": "이상한 환율…'美금리 ↑ = 원화 ↓' 공식 깨졌다",
-        "summary": "",
-        "url": "https://www.hankyung.com/article/2026100185081",
-        "publishedAt": "2026-10-01T09:08:57.000Z",
-        "importance": 1,
-        "id": "econ-2026100185081",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "it",
-        "source": "전자신문",
-        "title": "인핸스, IBK기업은행 '온톨로지 AI 데이터 분석' 실증 착수",
-        "summary": "인핸스는 IBK기업은행과 온톨로지 기반 인공지능(AI) 데이터 분석 실증에 착수했다고 1일 밝혔다. 은행 내부 업무 지식과 암묵지를 AI 에이전트가 활용할 수 있는 지식 자산으로 전환하는 것이 핵심이다.",
-        "url": "https://www.etnews.com/20261001000476",
-        "publishedAt": "2026-10-01T09:08:53.000Z",
+        "url": "https://www.chosun.com/culture-life/culture_general/2026/10/01/PX6ED3433RAJNKRK4ZAU4RANUM/",
+        "publishedAt": "2026-10-01T09:10:00.000Z",
+        "topic": "뉴데일리 · 검색 5천+",
+        "keywords": [
+          "뉴데일리"
+        ],
+        "points": [],
+        "rank": 2,
         "importance": 2,
-        "id": "it-20261001000476",
-        "keywords": [],
-        "points": []
+        "id": "popular-PX6ED3433RAJNKRK4ZAU4RANUM"
       },
       {
-        "category": "econ",
-        "source": "한국경제",
-        "title": "온누리상품권 전통시장 혜택 10%로 확대…'마운자로 약국' 쏠림은 계속될 듯",
+        "category": "popular",
+        "source": "Daum",
+        "title": "서초동 '검찰' 갈았다…'공소청' 유예기간 90일, 뭐부터 하나?",
         "summary": "",
-        "url": "https://www.hankyung.com/article/2026100186091",
-        "publishedAt": "2026-10-01T09:08:01.000Z",
+        "url": "https://v.daum.net/v/20261001192106621",
+        "publishedAt": "2026-10-01T09:10:00.000Z",
+        "topic": "중대범죄 수사청 · 검색 5천+",
+        "keywords": [
+          "중대범죄 수사청"
+        ],
+        "points": [],
+        "rank": 3,
+        "importance": 2,
+        "id": "popular-20261001192106621"
+      },
+      {
+        "category": "popular",
+        "source": "연합뉴스",
+        "title": "中 여성승무원, 잠든 승객 팔꿈치 건드려 '무릎 꿇고 사과' 논란",
+        "summary": "",
+        "url": "https://www.yna.co.kr/view/AKR20261001076100083",
+        "publishedAt": "2026-10-01T09:10:00.000Z",
+        "topic": "승무원 · 검색 1천+",
+        "keywords": [
+          "승무원"
+        ],
+        "points": [],
+        "rank": 8,
         "importance": 1,
-        "id": "econ-2026100186091",
-        "keywords": [],
-        "points": []
+        "id": "popular-AKR20261001076100083"
+      },
+      {
+        "category": "popular",
+        "source": "연합뉴스",
+        "title": "李대통령 참석 국군의날 시연행사서 드론 또 추락…\"기상 영향\"",
+        "summary": "",
+        "url": "https://www.yna.co.kr/view/AKR20261001132400504",
+        "publishedAt": "2026-10-01T09:10:00.000Z",
+        "topic": "현무 · 검색 1천+",
+        "keywords": [
+          "현무"
+        ],
+        "points": [],
+        "rank": 9,
+        "importance": 1,
+        "id": "popular-AKR20261001132400504"
       },
       {
         "category": "globalecon",
@@ -560,7 +1172,7 @@
         "summary": "미국 지방법원의 아라셀리 마르티네스-올귄 판사가 30일(현지시각) 파라마운트 스카이댄스와 워너 브라더스 인수를 막기 위해 소송을 제기한 12개 주 간 합의를 승인했다. 이에 따라 역사상 최대 규모의 미디어 합병 중 하나에 대한 마지막 주요 법적 장애물이 제거됐다.",
         "url": "https://www.newsis.com/view/NISX20261001_0003811415",
         "publishedAt": "2026-10-01T09:07:53.000Z",
-        "importance": 2,
+        "importance": 1,
         "id": "globalecon-NISX20261001_0003811415",
         "keywords": [],
         "points": []
@@ -578,38 +1190,14 @@
         "points": []
       },
       {
-        "category": "society",
-        "source": "연합뉴스",
-        "title": "삼성바이오에피스, 테바와 파트너십 강화…시밀러 2종 협력",
-        "summary": "삼성바이오에피스가 테바 파마슈티컬 인더스트리와 바이오시밀러 분야 협력을 강화한다.",
-        "url": "https://www.yna.co.kr/view/AKR20261001182100017",
-        "publishedAt": "2026-10-01T09:07:18.000Z",
-        "importance": 1,
-        "id": "society-AKR20261001182100017",
-        "keywords": [],
-        "points": []
-      },
-      {
         "category": "invest",
         "source": "연합인포맥스",
         "title": "\"증시 경보, 매매제한 유연하게 운용해야…AI 활용엔 실질적 통제 필요\"",
         "summary": "시장경보제도가 정상적인 거래까지 제약하지 않도록 경보 체계와 매매제한 조치를 유연하게 운용해야 한다는 제언이 나왔다. 선진시장과 달리 경보에 매매제한을 결합한 국내 제도를 글로벌 스탠더드에 맞춰 정비해 투자자 보호와 시장 자율성의 균형을 찾아야 한다는 지적이다.",
         "url": "https://news.einfomax.co.kr/news/articleView.html?idxno=4437448",
         "publishedAt": "2026-10-01T09:06:33.000Z",
-        "importance": 2,
-        "id": "invest-4437448",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "econ",
-        "source": "한국경제",
-        "title": "공항 이동 이어 반려견 돌봄까지…신세계면세점, VIP 혜택 확대",
-        "summary": "",
-        "url": "https://www.hankyung.com/article/202610018278g",
-        "publishedAt": "2026-10-01T09:06:09.000Z",
         "importance": 1,
-        "id": "econ-202610018278g",
+        "id": "invest-4437448",
         "keywords": [],
         "points": []
       },
@@ -657,54 +1245,6 @@
         "points": []
       },
       {
-        "category": "econ",
-        "source": "한국경제",
-        "title": "\"AI 시대서 中 추격 막으려면 기술 초격차뿐…세제·인프라 지원 절실\"",
-        "summary": "",
-        "url": "https://www.hankyung.com/article/202610018368i",
-        "publishedAt": "2026-10-01T09:03:57.000Z",
-        "importance": 1,
-        "id": "econ-202610018368i",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "invest",
-        "source": "연합인포맥스",
-        "title": "FX스와프, 전망치 하회한 美 물가지표에 상승",
-        "summary": "외환(FX) 스와프포인트가 전망치를 하회한 미국 물가지표를 소화하며 상승했다.1일 외화자금시장에서 1년 만기 FX스와프포인트는 시초가 대비 0.20원 상승한 -13.40원에 마감했다.6개월물은 시초가 대비 0.20원 상승한 -5.90원, 3개월물은 0.10원 상승한 -2.60원에 거래를 마쳤다",
-        "url": "https://news.einfomax.co.kr/news/articleView.html?idxno=4437447",
-        "publishedAt": "2026-10-01T09:01:34.000Z",
-        "importance": 1,
-        "id": "invest-4437447",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "society",
-        "source": "뉴시스",
-        "title": "허가·절차없이 외국인선원 태워 조업한 어선…해경 적발",
-        "summary": "허가받지 않은 외국인 선원을 태운 채 조업을 하던 어선이 해경에 적발됐다. 전북 군산해양경찰서는 어선 A(30t급)호를 출입국관리법 위반, 어선 안전 조업 및 어선원의 안전·보건에 관한 법률 위반 혐의로 적발했다고 1일 밝혔다.",
-        "url": "https://www.newsis.com/view/NISX20261001_0003811459",
-        "publishedAt": "2026-10-01T09:00:55.000Z",
-        "importance": 1,
-        "id": "society-NISX20261001_0003811459",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "society",
-        "source": "뉴시스",
-        "title": "美코넬대, 집단 성폭행 의혹 대응 재조사…외부 검증 받는다",
-        "summary": "미국 명문 코넬대가 집단 성폭행 의혹에 대한 학교 측 대응을 외부 법률가에게 맡겨 조사하기로 했다. 사건 당시 조사와 징계가 적절했는지를 둘러싼 비판이 커진 데 따른 조치다.",
-        "url": "https://www.newsis.com/view/NISX20261001_0003811240",
-        "publishedAt": "2026-10-01T09:00:05.000Z",
-        "importance": 1,
-        "id": "society-NISX20261001_0003811240",
-        "keywords": [],
-        "points": []
-      },
-      {
         "category": "politics",
         "source": "연합뉴스",
         "title": "천호성 전북교육감, '공직선거법 위반' 혐의로 추가 고발돼(종합)",
@@ -713,42 +1253,6 @@
         "publishedAt": "2026-10-01T09:00:04.000Z",
         "importance": 1,
         "id": "politics-AKR20261001102251055",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "society",
-        "source": "연합뉴스",
-        "title": "천호성 전북교육감, '공직선거법 위반' 혐의로 추가 고발돼(종합)",
-        "summary": "정치자금법 위반 혐의를 받는 천호성 전북교육감이 공직선거법 위반 등으로도 경찰 조사를 받게 됐다.",
-        "url": "https://www.yna.co.kr/view/AKR20261001102251055",
-        "publishedAt": "2026-10-01T09:00:04.000Z",
-        "importance": 1,
-        "id": "society-AKR20261001102251055",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "society",
-        "source": "뉴시스",
-        "title": "'태양 침대서 휴식을' [오늘의 한 컷]",
-        "summary": "[서울=뉴시스] 세계적인 '슬랙라인' 선수 얀 루스가 1일 서울 세종대로 상공에서 퍼포먼스 리허설을 하고 있다.",
-        "url": "https://www.newsis.com/view/NISX20261001_0003811293",
-        "publishedAt": "2026-10-01T09:00:00.000Z",
-        "importance": 1,
-        "id": "society-NISX20261001_0003811293",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "econ",
-        "source": "한국경제",
-        "title": "\"생수 1병이 3만4000원?\"…'부자마트' 대박나더니 벌어진 일",
-        "summary": "",
-        "url": "https://www.hankyung.com/article/2026100185171",
-        "publishedAt": "2026-10-01T08:59:41.000Z",
-        "importance": 1,
-        "id": "econ-2026100185171",
         "keywords": [],
         "points": []
       },
@@ -801,18 +1305,6 @@
         "points": []
       },
       {
-        "category": "society",
-        "source": "뉴시스",
-        "title": "중수청, 정원 3분의 2 규모로 닻…인근 유치장 등 수용시설 활용(종합2보)",
-        "summary": "초대 서울지방중수청장에 검사 출신 최재민(사법연수원 30기) 변호사가 임명 예정됐다. 중수청 차장에는 판사 출신 전종민(24기) 변호사가 낙점됐다. 이재명 정부에서 출범한 특별검사팀에서 특검보로 활약한 인사들도 지방청장으로 대거 전진 배치됐다.",
-        "url": "https://www.newsis.com/view/NISX20261001_0003811451",
-        "publishedAt": "2026-10-01T08:57:20.000Z",
-        "importance": 1,
-        "id": "society-NISX20261001_0003811451",
-        "keywords": [],
-        "points": []
-      },
-      {
         "category": "ent",
         "source": "연합뉴스",
         "title": "최휘영, '패노메논' 상표권 논란에 \"정부·행사 법인이 공동 보유\"",
@@ -839,11 +1331,11 @@
       {
         "category": "estate",
         "source": "한국경제",
-        "title": "86주째 상승…서울 집값, 文정부 기록 넘어",
+        "title": "서울 아파트값 86주 연속 상승…文정부 기록 넘어섰다",
         "summary": "",
         "url": "https://www.hankyung.com/article/2026100185711",
         "publishedAt": "2026-10-01T08:54:31.000Z",
-        "importance": 2,
+        "importance": 1,
         "id": "estate-2026100185711",
         "keywords": [],
         "points": []
@@ -867,44 +1359,8 @@
         "summary": "1일 일본 증시는 반도체 관련주 강세 속에 상승했다. 연합인포맥스 세계주가지수(6511)에 따르면 닛케이225지수는 전 거래일 대비 2,203.00포인트(3.30%) 급등한 68,956.72로 장을 마쳤다. 이날 장 내내 상승 폭을 확대한 닛케이지수는 지난 8월 17일 이후 처음으로 종가 기준 68,000선을 넘어섰다.",
         "url": "https://news.einfomax.co.kr/news/articleView.html?idxno=4437443",
         "publishedAt": "2026-10-01T08:53:20.000Z",
-        "importance": 2,
+        "importance": 1,
         "id": "globalecon-4437443",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "econ",
-        "source": "연합뉴스",
-        "title": "대출모집인 전용 서비스 뚫렸다…신한은행 보안 허점 노출(종합)",
-        "summary": "신한은행 고객 정보 유출 사고는 대출모집인들이 이용하는 신한 모바일 홈페이지 서비스를 통해 이뤄진 것으...",
-        "url": "https://www.yna.co.kr/view/AKR20261001145451002",
-        "publishedAt": "2026-10-01T08:53:03.000Z",
-        "importance": 1,
-        "id": "econ-AKR20261001145451002",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "econ",
-        "source": "연합뉴스",
-        "title": "외교부, 대미투자 공식발표에 \"안보협의 등 현안 진전 기대\"(종합)",
-        "summary": "외교부는 1일 도널드 트럼프 미국 대통령이 한국의 대미투자 계획을 발표한 것을 계기로 여타 한미 관계 ...",
-        "url": "https://www.yna.co.kr/view/AKR20261001147451504",
-        "publishedAt": "2026-10-01T08:52:58.000Z",
-        "importance": 1,
-        "id": "econ-AKR20261001147451504",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "politics",
-        "source": "연합뉴스",
-        "title": "외교부, 대미투자 공식발표에 \"안보협의 등 현안 진전 기대\"(종합)",
-        "summary": "외교부는 1일 도널드 트럼프 미국 대통령이 한국의 대미투자 계획을 발표한 것을 계기로 여타 한미 관계 ...",
-        "url": "https://www.yna.co.kr/view/AKR20261001147451504",
-        "publishedAt": "2026-10-01T08:52:58.000Z",
-        "importance": 1,
-        "id": "politics-AKR20261001147451504",
         "keywords": [],
         "points": []
       },
@@ -945,30 +1401,6 @@
         "points": []
       },
       {
-        "category": "sports",
-        "source": "연합뉴스",
-        "title": "[1보] 윤규성, 태권도 품새 금메달…한국 남자 개인전 3연패",
-        "summary": "연합뉴스) 김동한 기자 = 윤규성(제2군단사령부)이 2026 아이치·나고야 아시안게임에서 한국 태권도 품새 남자 개인전 3회 ...",
-        "url": "https://www.yna.co.kr/view/AKR20261001180700007",
-        "publishedAt": "2026-10-01T08:51:42.000Z",
-        "importance": 1,
-        "id": "sports-AKR20261001180700007",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "politics",
-        "source": "연합뉴스",
-        "title": "北국경선 요새화 책임추궁 가능할까…'지뢰매설 시기 규명' 주목(종합)",
-        "summary": "군이 비무장지대(DMZ) 지뢰 폭발에 대한 현장조사를 마무리한 가운데, 남은 최종 조사 결과 발표에서 ...",
-        "url": "https://www.yna.co.kr/view/AKR20261001148551504",
-        "publishedAt": "2026-10-01T08:51:33.000Z",
-        "importance": 1,
-        "id": "politics-AKR20261001148551504",
-        "keywords": [],
-        "points": []
-      },
-      {
         "category": "invest",
         "source": "한국거래소 공시",
         "publishedAt": "2026-10-01T08:51:00.000Z",
@@ -988,6 +1420,34 @@
         "id": "invest-20261001000690"
       },
       {
+        "category": "it",
+        "source": "ZDNet Korea",
+        "title": "핑거, 2차전지 장비업체 제일엠앤에스 인수…사업 다각화 속도",
+        "summary": "[지디넷코리아]핑거가 2차전지 믹싱장비 업체 제일엠앤에스 인수에 나선다. 최근 제조업체 인수를 통해 사업 영역을 넓히고 있는 가운데 2차전지 장비 분야까지 진출하며 사업 다각화에 속도를 내는 모습이다.1일 금융감독원 전자공시시스템에 따르면 핑거는 푸른재무안정 신기술투자조합 제1호에 140억원을 출자하기로 결정했다.",
+        "url": "https://zdnet.co.kr/view/?no=20261001174058",
+        "publishedAt": "2026-10-01T08:50:39.000Z",
+        "importance": 1,
+        "id": "it-20261001174058",
+        "keywords": [],
+        "points": []
+      },
+      {
+        "category": "popular",
+        "source": "Daum",
+        "title": "소설가 황석영 “김어준 오만해…대통령 잘못이 뭐 있나”",
+        "summary": "",
+        "url": "https://v.daum.net/v/20261001085513321",
+        "publishedAt": "2026-10-01T08:50:00.000Z",
+        "topic": "황석영 · 검색 1천+",
+        "keywords": [
+          "황석영"
+        ],
+        "points": [],
+        "rank": 10,
+        "importance": 1,
+        "id": "popular-20261001085513321"
+      },
+      {
         "category": "world",
         "source": "연합뉴스",
         "title": "日 최대 차량공유업체 개인정보 유출 '파문'…면허증 등 660만건",
@@ -1000,126 +1460,62 @@
         "points": []
       },
       {
-        "category": "politics",
-        "source": "뉴시스",
-        "title": "한국노총 \"산재사망 과징금 도입 환영…기업 경제적 책임 물어야\"",
-        "summary": "한국노동조합총연맹(한국노총)이 1년간 노동자 3명 이상이 산업재해로 사망한 기업에 영업이익의 최대 5%를 과징금으로 부과하는 산업안전보건법 개정안이 국회 본회의를 통과한 데 대해 환영의 뜻을 내비쳤다.",
-        "url": "https://www.newsis.com/view/NISX20261001_0003811425",
-        "publishedAt": "2026-10-01T08:48:39.000Z",
+        "category": "it",
+        "source": "ZDNet Korea",
+        "title": "코나아이, 휴온스그룹에 기업 복지 플랫폼 ‘코나비즈’ 공급",
+        "summary": "[지디넷코리아]핀테크(금융+기술) 기업 코나아이가 기업 복지 플랫폼 '코나비즈'를 통해 휴온스그룹에 식권카드를 공급한다.1일 회사에 따르면, 도입 대상은 휴온스·휴온스글로벌·휴메딕스 등 휴온스그룹 8개 계열사다. 기존 모바일 식권을 전면 교체해 이날부터 임직원 식대 지원에 활용한다.",
+        "url": "https://zdnet.co.kr/view/?no=20261001174711",
+        "publishedAt": "2026-10-01T08:47:11.000Z",
         "importance": 1,
-        "id": "politics-NISX20261001_0003811425",
+        "id": "it-20261001174711",
         "keywords": [],
         "points": []
       },
       {
-        "category": "sports",
-        "source": "연합뉴스",
-        "title": "[아시안게임] 부상 안고 정상에 선 품새 정하은 \"부러지면 또 일어났다\"",
-        "summary": "연합뉴스) 김동한 기자 = 거듭된 양쪽 아킬레스건 부상과 오른쪽 햄스트링 부분 파열까지 안고 첫 아시안게임 무대에 선 정하은(...",
-        "url": "https://www.yna.co.kr/view/AKR20261001180200007",
-        "publishedAt": "2026-10-01T08:47:51.000Z",
+        "category": "it",
+        "source": "ZDNet Korea",
+        "title": "배럴, 서핑·프리다이빙용 '네오프렌 시리즈' 출시",
+        "summary": "[지디넷코리아]워터 스포츠 브랜드 배럴이 서핑과 프리다이빙 등 수중 활동에 맞춘 '네오프렌 시리즈'를 출시했다. 배럴은 프리다이빙용 풀슈트부터 서핑 등에 활용할 수 있는 스프링 슈트와 자켓, 키즈 제품 등으로 구성한 네오프렌 시리즈를 선보인다고 1일 밝혔다. 이번 제품에는 일본 야마모토 네오프렌 원단을 적용했다.",
+        "url": "https://zdnet.co.kr/view/?no=20261001173902",
+        "publishedAt": "2026-10-01T08:45:01.000Z",
         "importance": 1,
-        "id": "sports-AKR20261001180200007",
+        "id": "it-20261001173902",
         "keywords": [],
         "points": []
       },
       {
-        "category": "politics",
-        "source": "연합뉴스",
-        "title": "예방접종 별도법 제정…비급여 접종도 기록 의무화",
-        "summary": "앞으로 국가 지원 대상이 아닌 비급여 예방접종도 접종 기록을 의무적으로 남겨야 해 개인별 예방접종 이력 관리가...",
-        "url": "https://www.yna.co.kr/view/AKR20261001177200530",
-        "publishedAt": "2026-10-01T08:47:27.000Z",
+        "category": "it",
+        "source": "ZDNet Korea",
+        "title": "\"원하는 선수·장면만 골라본다”…세븐미닛, ‘7CUT’ 상용화",
+        "summary": "[지디넷코리아]AI 시청 에이전트 개발사 세븐미닛이 AI 시청 솔루션 '7CUT'을 '웨이브 골프'에 첫 상용화 적용한다.1일 회사에 따르면, 7CUT은 영상의 맥락과 시청자의 의도를 실시간 파악해 단일 영상 콘텐츠를 시청자가 원하는 방식에 맞춰 재구성해 주는 AI 솔루션이다.",
+        "url": "https://zdnet.co.kr/view/?no=20261001174043",
+        "publishedAt": "2026-10-01T08:40:43.000Z",
         "importance": 1,
-        "id": "politics-AKR20261001177200530",
+        "id": "it-20261001174043",
         "keywords": [],
         "points": []
       },
       {
-        "category": "sports",
-        "source": "연합뉴스",
-        "title": "[아시안게임] '동반 金 명중' 사격 추가은·윤서영, 사랑도 함께 쐈다",
-        "summary": "연합뉴스) 이대호 기자 = 2026 아이치·나고야 아시안게임에서 한국 사격의 미래를 밝힌 두 명의 금메달리스트가 사랑까지 조심스...",
-        "url": "https://www.yna.co.kr/view/AKR20261001179900007",
-        "publishedAt": "2026-10-01T08:45:47.000Z",
+        "category": "it",
+        "source": "ZDNet Korea",
+        "title": "휘슬러코리아, 10월 한 달간 '휘슬러 페스타'…압력솥·냄비 할인",
+        "summary": "[지디넷코리아]휘슬러코리아가 압력솥과 냄비, 팬 등 주요 주방용품을 대상으로 10월 한 달간 할인 행사를 진행한다. 독일 쿡웨어 브랜드 휘슬러코리아는 1일부터 31일까지 온·오프라인 주요 판매 채널에서 '2026 휘슬러 페스타'를 개최한다고 밝혔다.",
+        "url": "https://zdnet.co.kr/view/?no=20261001173547",
+        "publishedAt": "2026-10-01T08:40:01.000Z",
         "importance": 1,
-        "id": "sports-AKR20261001179900007",
+        "id": "it-20261001173547",
         "keywords": [],
         "points": []
       },
       {
-        "category": "politics",
-        "source": "연합뉴스",
-        "title": "박홍배 의원, 교정시설 이전지역 지원 확대 법안 대표발의",
-        "summary": "더불어민주당 박홍배 국회의원(부산 사상구 지역위원장)은 노후 교정시설 이전 과정에서 반복되는 지역갈등을 해소하...",
-        "url": "https://www.yna.co.kr/view/AKR20261001148000051",
-        "publishedAt": "2026-10-01T08:45:07.000Z",
+        "category": "it",
+        "source": "ZDNet Korea",
+        "title": "LG전자·카카오모빌리티·로보티즈, 로봇연합 확대…배송 넘어 휴머노이드로",
+        "summary": "[지디넷코리아]LG전자와 카카오모빌리티, 로보티즈가 3자 로봇 연합을 확대한다. 기존 로봇 배송 서비스를 넘어 휴머노이드 기반 솔루션으로 영역을 넓힌다는 구상이다.1일 업계에 따르면 LG전자와 LG전자의 로봇 자회사 베어로보틱스, 카카오모빌리티, 로보티즈 등은 이기종 로봇 파트너십 확대를 추진하고 있다.",
+        "url": "https://zdnet.co.kr/view/?no=20261001152147",
+        "publishedAt": "2026-10-01T08:39:23.000Z",
         "importance": 1,
-        "id": "politics-AKR20261001148000051",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "world",
-        "source": "연합뉴스",
-        "title": "화웨이 스마트폰 신제품에 또 자체 설계 칩 탑재…\"발전 시험대\"",
-        "summary": "중국 화웨이가 미국의 대중국 첨단 반도체 수출 규제에 대응하기 위해 1일(현지시간) 발표한 스마트폰 신제품...",
-        "url": "https://www.yna.co.kr/view/AKR20261001174000089",
-        "publishedAt": "2026-10-01T08:43:25.000Z",
-        "importance": 1,
-        "id": "world-AKR20261001174000089",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "sports",
-        "source": "연합뉴스",
-        "title": "[아시안게임] 한국 럭비, 태국 꺾고 첫 승…'우승 후보' 일본에는 패배",
-        "summary": "아시안게임 2회 연속 결승 진출을 노리는 한국 럭비 대표팀이 조별리그 첫날 1승 1패를 기록했다.",
-        "url": "https://www.yna.co.kr/view/AKR20261001178600007",
-        "publishedAt": "2026-10-01T08:40:55.000Z",
-        "importance": 1,
-        "id": "sports-AKR20261001178600007",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "sports",
-        "source": "연합뉴스",
-        "title": "[아시안게임] 빛나는 금메달 하나·못넘은 인도의 벽…컴파운드 '절반의 성공'",
-        "summary": "한국 컴파운드 양궁이 2026 아이치·나고야 아시안게임에서 '절반의 성공'을 거뒀다.",
-        "url": "https://www.yna.co.kr/view/AKR20261001178500007",
-        "publishedAt": "2026-10-01T08:40:46.000Z",
-        "importance": 1,
-        "id": "sports-AKR20261001178500007",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "popular",
-        "source": "스포츠경향",
-        "title": "짐 캐리, 한국계로 알려진 민아와 극비 결혼…세 번째 결혼식 올렸다",
-        "summary": "",
-        "url": "https://sports.khan.co.kr/article/202610011501003",
-        "publishedAt": "2026-10-01T08:40:00.000Z",
-        "topic": "짐 캐리 · 검색 5천+",
-        "keywords": [
-          "짐 캐리"
-        ],
-        "points": [],
-        "rank": 3,
-        "importance": 2,
-        "id": "popular-202610011501003"
-      },
-      {
-        "category": "world",
-        "source": "연합뉴스",
-        "title": "日, 맥주류 세금 단일화…가성비 '제3의 맥주' 시대 저무나",
-        "summary": "일본에서 1일 주세 개정이 이뤄지면서 맥주류의 세액이 통일됨에 따라 맥주 시장의 변화가 예상된다고 니혼게이자...",
-        "url": "https://www.yna.co.kr/view/AKR20261001168400073",
-        "publishedAt": "2026-10-01T08:35:07.000Z",
-        "importance": 1,
-        "id": "world-AKR20261001168400073",
+        "id": "it-20261001152147",
         "keywords": [],
         "points": []
       },
@@ -1136,18 +1532,6 @@
         "points": []
       },
       {
-        "category": "world",
-        "source": "연합뉴스",
-        "title": "[쇼츠] 쾅쾅쾅! 퇴역함 침몰…미·영 합동 실사격 격침 훈련",
-        "summary": "(서울=연합뉴스) 미 해군연구소(USNI) 뉴스와 영국 해군 전문 매체 네이비 룩아웃에 따르면 미·영 해군은 지난달 21일(현지시간) 스코틀랜드...",
-        "url": "https://www.yna.co.kr/view/AKR20261001176400704",
-        "publishedAt": "2026-10-01T08:29:43.000Z",
-        "importance": 1,
-        "id": "world-AKR20261001176400704",
-        "keywords": [],
-        "points": []
-      },
-      {
         "category": "breaking",
         "source": "연합뉴스",
         "title": "[1보] 독립운동가 후손 허미미, 나고야 AG 여자 유도 57㎏급 금메달",
@@ -1156,42 +1540,6 @@
         "publishedAt": "2026-10-01T08:26:22.000Z",
         "importance": 2,
         "id": "breaking-AKR20261001176600007",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "it",
-        "source": "ZDNet Korea",
-        "title": "李 대통령 \"(치킨값) 점검해 보겠다\"…프랜차이즈 반응은",
-        "summary": "[지디넷코리아]이재명 대통령이 닭고기 가격 하락에도 치킨 가격이 그대로인 점을 지적하며 가격 구조 점검을 예고하자 치킨업계가 난색을 보이고 있다. 산지 육계 가격은 크게 떨어졌지만 가공비와 인건비, 물류비, 배달 플랫폼 비용 등 다른 부담이 여전해 당장 소비자가격을 내리기는 어렵다는 입장이다",
-        "url": "https://zdnet.co.kr/view/?no=20261001165515",
-        "publishedAt": "2026-10-01T08:26:14.000Z",
-        "importance": 2,
-        "id": "it-20261001165515",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "it",
-        "source": "전자신문",
-        "title": "한국딥러닝, 문서 분석 AI '딥 에이전트' 모바일 앱 출시",
-        "summary": "한국딥러닝은 문서 분석 인공지능(AI) 에이전트 '딥 에이전트' 모바일 앱을 출시했다고 1일 밝혔다. 딥 에이전트는 현장에서 촬영한 이미지에서 필요한 텍스트와 항목, 표 정보를 추출·구조화하는 AI 솔루션이다.",
-        "url": "https://www.etnews.com/20261001000460",
-        "publishedAt": "2026-10-01T08:26:07.000Z",
-        "importance": 1,
-        "id": "it-20261001000460",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "world",
-        "source": "연합뉴스",
-        "title": "로마서 '친애하는 X' 상영회…연출진 토크쇼도",
-        "summary": "주이탈리아 한국문화원은 로마에서 티빙 오리지널 시리즈 '친애하는 X' 특별 상영회와 연출진 토크쇼를 개최했다...",
-        "url": "https://www.yna.co.kr/view/AKR20261001174800109",
-        "publishedAt": "2026-10-01T08:21:06.000Z",
-        "importance": 1,
-        "id": "world-AKR20261001174800109",
         "keywords": [],
         "points": []
       },
@@ -1208,22 +1556,6 @@
         "points": []
       },
       {
-        "category": "popular",
-        "source": "기호일보",
-        "title": "화성도시공사, 팔탄 똑버스 운행구역 확대",
-        "summary": "",
-        "url": "https://www.kihoilbo.co.kr/news/articleView.html?idxno=3036416",
-        "publishedAt": "2026-10-01T08:20:00.000Z",
-        "topic": "화성 · 검색 500+",
-        "keywords": [
-          "화성"
-        ],
-        "points": [],
-        "rank": 8,
-        "importance": 1,
-        "id": "popular-3036416"
-      },
-      {
         "category": "globalecon",
         "source": "연합인포맥스",
         "title": "KKR \"AI가 美 투자 사이클의 집중도 이례적 심화시켜\"",
@@ -1236,18 +1568,6 @@
         "points": []
       },
       {
-        "category": "it",
-        "source": "ZDNet Korea",
-        "title": "초이락, '호빵맨' IP 확장 본격화…CJ올리브영과 맞손",
-        "summary": "[지디넷코리아]'호빵맨' 캐릭터의 국내 라이선스를 보유한 초이락컨텐츠컴퍼니가 CJ올리브영과 10월 한 달간 대규모 협업을 진행한다. 1일 회사에 따르면, 이번 행사에는 30개 이상의 브랜드사가 참여한다. 기초 스킨케어부터 과자류, 냉장·신선식품에 이르는 한정 패키지와 제품별 굿즈 기획 상품을 선보인다.",
-        "url": "https://zdnet.co.kr/view/?no=20261001171921",
-        "publishedAt": "2026-10-01T08:19:21.000Z",
-        "importance": 1,
-        "id": "it-20261001171921",
-        "keywords": [],
-        "points": []
-      },
-      {
         "category": "globalecon",
         "source": "뉴시스",
         "title": "美민주, 데이터센터 전기료 법안 저지…\"소비자 보호 미흡\"",
@@ -1256,30 +1576,6 @@
         "publishedAt": "2026-10-01T08:19:01.000Z",
         "importance": 1,
         "id": "globalecon-NISX20261001_0003810508",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "it",
-        "source": "ZDNet Korea",
-        "title": "美, 자율전투사령부 만든다…드론·AI 전력 한곳서 총괄",
-        "summary": "[지디넷코리아]미국이 드론과 인공지능(AI) 기반 무기를 전담하는 4성 장군급 '자율전투사령부' 신설을 추진한다.30일(현지시간) 로이터통신에 따르면 피트 헤그세스 미국 국방장관은 이날 연설에서 미군의 드론과 로봇 등 자율체계 역량을 통합하는 자율전투사령부 신설 계획을 발표했다.",
-        "url": "https://zdnet.co.kr/view/?no=20261001170918",
-        "publishedAt": "2026-10-01T08:14:28.000Z",
-        "importance": 1,
-        "id": "it-20261001170918",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "it",
-        "source": "전자신문",
-        "title": "업스테이지, 소형 LLM '솔라 미니 4' 공개…350억 파라미터 규모",
-        "summary": "업스테이지는 경량언어모델(SLM) '솔라 미니 4'를 공개했다고 1일 밝혔다. '솔라 미니 4'는 적은 연산량으로 고성능·고효율을 구현한 것이 특징이다. 전체 350억개 매개변수에 전문가혼합(MoE) 구조를 적용해 실제 추론 시에는 30억개만 선택적으로 활성화한다.",
-        "url": "https://www.etnews.com/20261001000457",
-        "publishedAt": "2026-10-01T08:12:07.000Z",
-        "importance": 1,
-        "id": "it-20261001000457",
         "keywords": [],
         "points": []
       },
@@ -1302,7 +1598,7 @@
         "summary": "",
         "url": "https://www.hankyung.com/article/202610018401i",
         "publishedAt": "2026-10-01T08:11:45.000Z",
-        "importance": 2,
+        "importance": 1,
         "id": "estate-202610018401i",
         "keywords": [],
         "points": []
@@ -1316,34 +1612,6 @@
         "publishedAt": "2026-10-01T08:11:09.000Z",
         "importance": 1,
         "id": "ent-AKR20261001173200017",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "popular",
-        "source": "Daum",
-        "title": "[친절한 경제] 코스피 급락에 \"세계 최악\"…폭락 원인은?",
-        "summary": "",
-        "url": "https://v.daum.net/v/WLmRl3ae7l",
-        "publishedAt": "2026-10-01T08:10:00.000Z",
-        "topic": "코스피 · 검색 2천+",
-        "keywords": [
-          "코스피"
-        ],
-        "points": [],
-        "rank": 4,
-        "importance": 1,
-        "id": "popular-WLmRl3ae7l"
-      },
-      {
-        "category": "it",
-        "source": "ZDNet Korea",
-        "title": "지마켓, '월첫세일' 시작…특가상품 1000개·최대 60% 할인",
-        "summary": "[지디넷코리아]지마켓은 5일간 식품과 뷰티 상품을 위주로 '월첫세일'을 개최하고 특가상품 1000개를 최대 60% 할인한다고 1일 밝혔다. 월첫세일은 지마켓이 매달 1일 선보이는 정기 기획전이다. 매월 첫날 쇼핑 혜택을 집중적으로 제공해 고객이 이날을 지마켓에서 쇼핑하는 날로 인식하도록 하는 것이 목표다.",
-        "url": "https://zdnet.co.kr/view/?no=20261001153207",
-        "publishedAt": "2026-10-01T08:07:34.000Z",
-        "importance": 1,
-        "id": "it-20261001153207",
         "keywords": [],
         "points": []
       },
@@ -1365,34 +1633,6 @@
         "url": "https://kind.krx.co.kr/common/disclsviewer.do?method=searchInitInfo&acptNo=20261001000636&docno=",
         "importance": 1,
         "id": "invest-20261001000636"
-      },
-      {
-        "category": "it",
-        "source": "ZDNet Korea",
-        "title": "태양광 에너지로 우주 전력 공급…세계 첫 도전 주목 [우주로 간다]",
-        "summary": "[지디넷코리아]지구 궤도에서 태양광 에너지를 모아 다른 위성에 무선으로 전력을 공급하는 ‘우주 전력망’ 구축이 본격화된다. 우주 자산의 전력 부족 문제를 해결하기 위한 첫걸음이다.",
-        "url": "https://zdnet.co.kr/view/?no=20261001163438",
-        "publishedAt": "2026-10-01T08:01:53.000Z",
-        "importance": 1,
-        "id": "it-20261001163438",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "popular",
-        "source": "매일경제",
-        "title": "‘찬바람 불면 역시 배당주’ 올해도 통할까…증권가 콕 찍은 종목은",
-        "summary": "",
-        "url": "https://www.mk.co.kr/news/stock/12166187",
-        "publishedAt": "2026-10-01T08:00:00.000Z",
-        "topic": "배당 · 검색 1만+",
-        "keywords": [
-          "배당"
-        ],
-        "points": [],
-        "rank": 2,
-        "importance": 2,
-        "id": "popular-12166187"
       },
       {
         "category": "globalecon",
@@ -1432,20 +1672,8 @@
         "summary": "",
         "url": "https://www.hankyung.com/article/202610018347i",
         "publishedAt": "2026-10-01T07:57:23.000Z",
-        "importance": 2,
-        "id": "estate-202610018347i",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "it",
-        "source": "ZDNet Korea",
-        "title": "메디인테크, 세계소화기내시경학회 'ENDO 2026'서 AI 로봇내시경 선봬",
-        "summary": "[지디넷코리아]의료로봇 스타트업 메디인테크가 남아프리카공화국 케이프타운에서 열린 제5회 세계소화기내시경학회 'ENDO 2026'에 참가해 인공지능(AI) 로봇내시경 '인티온 에스(INTION S)'와 AI 내시경 소프트웨어 '인티온 딥아이(INTION DEEPEYE)'를 선보였다고 1일 밝혔다.",
-        "url": "https://zdnet.co.kr/view/?no=20261001165014",
-        "publishedAt": "2026-10-01T07:56:21.000Z",
         "importance": 1,
-        "id": "it-20261001165014",
+        "id": "estate-202610018347i",
         "keywords": [],
         "points": []
       },
@@ -1460,38 +1688,6 @@
         "id": "ent-AKR20261001164100005",
         "keywords": [],
         "points": []
-      },
-      {
-        "category": "popular",
-        "source": "Daum",
-        "title": "시민단체, '암살자(들)' 단체관람한 정부·공공기관 고발",
-        "summary": "",
-        "url": "https://v.daum.net/v/20261001180546207",
-        "publishedAt": "2026-10-01T07:50:00.000Z",
-        "topic": "최승호 · 검색 2천+",
-        "keywords": [
-          "최승호"
-        ],
-        "points": [],
-        "rank": 5,
-        "importance": 1,
-        "id": "popular-20261001180546207"
-      },
-      {
-        "category": "popular",
-        "source": "한국대학신문",
-        "title": "아시아 대학 약진에 한국은 ‘제자리’… 세계 200위권 2년째 6개교[2027 THE 세계대학평가]",
-        "summary": "",
-        "url": "https://news.unn.net/news/articleView.html?idxno=598108",
-        "publishedAt": "2026-10-01T07:50:00.000Z",
-        "topic": "대학 순위 · 검색 1천+",
-        "keywords": [
-          "대학 순위"
-        ],
-        "points": [],
-        "rank": 6,
-        "importance": 1,
-        "id": "popular-598108"
       },
       {
         "category": "globalecon",
@@ -1566,18 +1762,6 @@
         "points": []
       },
       {
-        "category": "globalecon",
-        "source": "뉴시스",
-        "title": "日미쓰비시중공업, 조선소에 1000억엔 투자…건조능력 25%↑",
-        "summary": "일본의 미쓰비시(三菱)중공업이 조선소에 1000억엔(약 8600억 원)을 투자해 건조 능력을 25% 끌어올릴 계획이다. 니혼게이자이신문(닛케이) 등에 따르면 미쓰비시중공업은 야마구치(山口)현 소재 시모노세키(下関)조선소에 1000억엔을 투자할 계획을 밝혔다.",
-        "url": "https://www.newsis.com/view/NISX20261001_0003811011",
-        "publishedAt": "2026-10-01T07:34:39.000Z",
-        "importance": 1,
-        "id": "globalecon-NISX20261001_0003811011",
-        "keywords": [],
-        "points": []
-      },
-      {
         "category": "estate",
         "source": "한국경제",
         "title": "보증금 반환·수선의무 누가지나...부동산원 분쟁조정 상담 [집코노미 박람회 2026]",
@@ -1588,38 +1772,6 @@
         "id": "estate-202610018281i",
         "keywords": [],
         "points": []
-      },
-      {
-        "category": "popular",
-        "source": "뉴스1",
-        "title": "시어머니상 내내 폰 보고 실실거린 아내…\"남편이 장모상서 게임 하면 좋냐\"",
-        "summary": "",
-        "url": "https://www.news1.kr/society/general-society/6305887",
-        "publishedAt": "2026-10-01T07:30:00.000Z",
-        "topic": "시어머니 · 검색 2만+",
-        "keywords": [
-          "시어머니"
-        ],
-        "points": [],
-        "rank": 1,
-        "importance": 3,
-        "id": "popular-6305887"
-      },
-      {
-        "category": "popular",
-        "source": "Daum",
-        "title": "[아시안게임] '김예지 남편' 이건혁, 고난 극복하고 마침내 '金金' 명중",
-        "summary": "",
-        "url": "https://v.daum.net/v/20261001162203750",
-        "publishedAt": "2026-10-01T07:30:00.000Z",
-        "topic": "이건혁 · 검색 500+",
-        "keywords": [
-          "이건혁"
-        ],
-        "points": [],
-        "rank": 9,
-        "importance": 1,
-        "id": "popular-20261001162203750"
       },
       {
         "category": "estate",
@@ -1658,22 +1810,6 @@
         "points": []
       },
       {
-        "category": "popular",
-        "source": "해사신문",
-        "title": "HD현대중, 8200톤급 정조대왕급 3번함 진수…2027년 12월 해군 인도",
-        "summary": "",
-        "url": "http://www.haesanews.com/news/articleView.html?idxno=151585",
-        "publishedAt": "2026-10-01T07:10:00.000Z",
-        "topic": "대한민국 해군 · 검색 1천+",
-        "keywords": [
-          "대한민국 해군"
-        ],
-        "points": [],
-        "rank": 7,
-        "importance": 1,
-        "id": "popular-151585"
-      },
-      {
         "category": "breaking",
         "source": "연합뉴스",
         "title": "[속보] 광주중수청장에 임은정 서울동부지검장…부산청장 김기욱",
@@ -1698,18 +1834,6 @@
         "points": []
       },
       {
-        "category": "globalecon",
-        "source": "연합인포맥스",
-        "title": "JP모건 \"M7 밸류에이션 조정 거의 끝나…실적 성장세 봐야\"",
-        "summary": "미국 대형 기술주 '매그니피센트7(Magnificent Seven)'의 밸류에이션 하락이 상당 부분 진행됐으며, 향후 주가 향방은 인공지능(AI) 투자 부담보다 실적 성장세에 더욱 좌우될 것이라는 분석이 나왔다",
-        "url": "https://news.einfomax.co.kr/news/articleView.html?idxno=4437422",
-        "publishedAt": "2026-10-01T07:04:27.000Z",
-        "importance": 1,
-        "id": "globalecon-4437422",
-        "keywords": [],
-        "points": []
-      },
-      {
         "category": "breaking",
         "source": "연합뉴스",
         "title": "[속보] 산업안전법안 본회의 통과…연 3명 이상 사고 기업에 과징금",
@@ -1722,42 +1846,6 @@
         "points": []
       },
       {
-        "category": "estate",
-        "source": "한국경제",
-        "title": "동탄을 완성하는 상징적 자리…첫 하이퍼엔드 주거 '아크메르 동탄' 베일 벗는다",
-        "summary": "",
-        "url": "https://www.hankyung.com/article/2026100168471",
-        "publishedAt": "2026-10-01T07:01:40.000Z",
-        "importance": 1,
-        "id": "estate-2026100168471",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "estate",
-        "source": "연합뉴스",
-        "title": "재경부, 중앙-지방 국유재산 협의회…주택공급 협조 요청",
-        "summary": "중앙정부와 지방정부가 주택공급, 국·공유지 효율적 활용을 위한 협력에 나섰다.",
-        "url": "https://www.yna.co.kr/view/AKR20261001121600002",
-        "publishedAt": "2026-10-01T07:00:53.000Z",
-        "importance": 1,
-        "id": "estate-AKR20261001121600002",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "globalecon",
-        "source": "뉴시스",
-        "title": "산업장관 \"대미투자, 韓산업 경쟁력 강화 계기 만들 것\"",
-        "summary": "김정관 산업통상부 장관은 1일 \"대미 투자 프로젝트는 단순히 자금을 투자하는 것을 넘어 우리기업의 새로운 기회를 확대하고 산업 협력을 한 단계 더 높이며, 궁극적으로 산업 경쟁력 강화하는 계기가 되도록 할 것\"이라고 밝혔다.",
-        "url": "https://www.newsis.com/view/NISX20261001_0003810766",
-        "publishedAt": "2026-10-01T07:00:00.000Z",
-        "importance": 1,
-        "id": "globalecon-NISX20261001_0003810766",
-        "keywords": [],
-        "points": []
-      },
-      {
         "category": "breaking",
         "source": "연합뉴스",
         "title": "[1보] 초대 서울중수청장 최재민·중수청 차장 전종민…첫 인사 단행",
@@ -1766,18 +1854,6 @@
         "publishedAt": "2026-10-01T06:58:48.000Z",
         "importance": 1,
         "id": "breaking-AKR20261001149800530",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "estate",
-        "source": "한국경제",
-        "title": "청라 11억대 회복세에 영종 재평가…6억대 신축 '디에트르 라메르'",
-        "summary": "",
-        "url": "https://www.hankyung.com/article/2026100168581",
-        "publishedAt": "2026-10-01T06:56:02.000Z",
-        "importance": 1,
-        "id": "estate-2026100168581",
         "keywords": [],
         "points": []
       },
@@ -1802,34 +1878,6 @@
         "publishedAt": "2026-10-01T06:50:54.000Z",
         "importance": 1,
         "id": "ent-AKR20261001143700005",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "popular",
-        "source": "Chosunbiz",
-        "title": "엄마 복붙한 줄…‘백종원♥’ 소유진, 제주서 공개한 훌쩍 큰 딸 ‘붕어빵 비주얼’ - 조선비즈",
-        "summary": "",
-        "url": "https://biz.chosun.com/entertainment/enter_general/2026/10/01/MIYGKM3BMVTDSOJXG4ZDOYZUME/",
-        "publishedAt": "2026-10-01T06:50:00.000Z",
-        "topic": "소유진 · 검색 500+",
-        "keywords": [
-          "소유진"
-        ],
-        "points": [],
-        "rank": 10,
-        "importance": 1,
-        "id": "popular-MIYGKM3BMVTDSOJXG4ZDOYZUME"
-      },
-      {
-        "category": "estate",
-        "source": "한국경제",
-        "title": "'빈하 리버사이드 CC·윈덤 데이즈 호텔' 창립회원 특별 모집",
-        "summary": "",
-        "url": "https://www.hankyung.com/article/2026100168681",
-        "publishedAt": "2026-10-01T06:49:45.000Z",
-        "importance": 1,
-        "id": "estate-2026100168681",
         "keywords": [],
         "points": []
       },
@@ -1878,42 +1926,6 @@
         "publishedAt": "2026-10-01T06:24:42.000Z",
         "importance": 1,
         "id": "breaking-AKR20261001140000001",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "estate",
-        "source": "한국경제",
-        "title": "방한 외래객 역대 최대…'명동 호텔 귀해졌다' [집코노미 박람회 2026]",
-        "summary": "",
-        "url": "https://www.hankyung.com/article/202610017947i",
-        "publishedAt": "2026-10-01T06:22:51.000Z",
-        "importance": 1,
-        "id": "estate-202610017947i",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "estate",
-        "source": "연합뉴스",
-        "title": "LH, 호남권 반도체 국가산단 설계 착수…내년 중순 승인 목표",
-        "summary": "한국토지주택공사(LH)가 호남권 반도체 첨단 국가산업단지 후보지 발표 3개월 만에 설계에 착수했다.",
-        "url": "https://www.yna.co.kr/view/AKR20261001138300003",
-        "publishedAt": "2026-10-01T06:19:19.000Z",
-        "importance": 1,
-        "id": "estate-AKR20261001138300003",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "estate",
-        "source": "한국경제",
-        "title": "검단호수공원역부터 인천로봇랜드까지…인천 토지 공급 확대 [집코노미 박람회 2026]",
-        "summary": "",
-        "url": "https://www.hankyung.com/article/202610017891i",
-        "publishedAt": "2026-10-01T06:03:14.000Z",
-        "importance": 1,
-        "id": "estate-202610017891i",
         "keywords": [],
         "points": []
       },
@@ -2010,18 +2022,6 @@
         "publishedAt": "2026-10-01T05:33:00.000Z",
         "importance": 1,
         "id": "breaking-AKR20261001124300001",
-        "keywords": [],
-        "points": []
-      },
-      {
-        "category": "estate",
-        "source": "한국경제",
-        "title": "서울 집값 3분의 1 분양가·후분양 펜트하우스…경기 서북부 단지 소개 [집코노미 박람회 2026]",
-        "summary": "",
-        "url": "https://www.hankyung.com/article/202610017776i",
-        "publishedAt": "2026-10-01T05:31:02.000Z",
-        "importance": 1,
-        "id": "estate-202610017776i",
         "keywords": [],
         "points": []
       },

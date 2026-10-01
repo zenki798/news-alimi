@@ -397,14 +397,23 @@ function parseTrends(xml, feed) {
   const out = [];
   for (const b of xml.match(/<item>[\s\S]*?<\/item>/gi) || []) {
     const topic = clean(pick(b, 'title'));
-    const news = b.match(/<ht:news_item>[\s\S]*?<\/ht:news_item>/i);
-    if (!topic || !news) continue;
-    const source = clean(pick(news[0], 'ht:news_item_source'));
-    let title = clean(pick(news[0], 'ht:news_item_title'));
-    /* 제목 끝에 "- 머니투데이" 처럼 언론사 이름이 붙어 오기도 한다. 출처 칸에 따로 있으므로 뗀다 */
-    if (source && title.endsWith(' - ' + source)) title = title.slice(0, -(source.length + 3)).trim();
-    const url = clean(pick(news[0], 'ht:news_item_url'));
-    if (!title || !/^https?:\/\//.test(url)) continue;
+    if (!topic) continue;
+
+    /* 주제마다 기사가 세 건쯤 온다. 한국어 기사만 남기고, 그중 국내 매체를 먼저 고른다.
+     * - 한글이 없는 기사는 뺀다. 미국 서버(Actions)에서 받으면 한국 목록에 다른 나라 주제가 섞여 올 때가 있다
+     *   (2026-10-01 태국 "ตรวจหวย"(복권 확인)·Sanook.com 이 10위로 올라왔다. 이 PC 에서 받은 목록에는 없었다).
+     *   한국어 기사가 하나도 없는 주제는 통째로 뺀다.
+     * - 한국이 아닌 나라 주소(.vn·.th 등)는 뒤로 미룬다. 베트남 매체의 한국어판(ko.laodong.vn)이 첫 기사로 와서
+     *   다음·스포츠조선 대신 뽑힌 적이 있다. */
+    const news = (b.match(/<ht:news_item>[\s\S]*?<\/ht:news_item>/gi) || []).map(n => {
+      const source = clean(pick(n, 'ht:news_item_source'));
+      let title = clean(pick(n, 'ht:news_item_title'));
+      /* 제목 끝에 "- 머니투데이" 처럼 언론사 이름이 붙어 오기도 한다. 출처 칸에 따로 있으므로 뗀다 */
+      if (source && title.endsWith(' - ' + source)) title = title.slice(0, -(source.length + 3)).trim();
+      return { source, title, url: clean(pick(n, 'ht:news_item_url')) };
+    }).filter(n => n.title && /^https?:\/\//.test(n.url) && HANGUL.test(n.title));
+    if (!news.length) continue;
+    const { source, title, url } = news.find(n => !foreignHost(n.url)) || news[0];
 
     const traffic = Number(clean(pick(b, 'ht:approx_traffic')).replace(/[^\d]/g, '')) || 0;
     const t = new Date(clean(pick(b, 'pubDate')));
@@ -424,6 +433,16 @@ function parseTrends(xml, feed) {
   out.sort((a, b) => (b.traffic - a.traffic) || (new Date(b.publishedAt) - new Date(a.publishedAt)));
   out.forEach((a, i) => { a.rank = i + 1; delete a.traffic; });
   return out;
+}
+
+const HANGUL = /[가-힣]/;
+
+/** 한국이 아닌 나라 주소인가 (끝이 두 글자 나라 이름이고 kr 이 아님: .vn .th .jp …). .com·.net 은 아니다 */
+function foreignHost(url) {
+  try {
+    const tld = new URL(url).hostname.split('.').pop();
+    return /^[a-z]{2}$/.test(tld) && tld !== 'kr';
+  } catch (e) { return true; }
 }
 
 /** 10000 → "1만+", 2000 → "2천+", 500 → "500+" (구글이 주는 어림값이다) */

@@ -133,6 +133,17 @@ test.describe('데이터 정합성', () => {
   /* 'IT 칸을 한 출처가 통째로 차지하지 않는다' 는 collector.spec.js 의 피드 설정 검사로 옮겼다.
      저장소의 뉴스 사본으로 보면 피드가 잠깐 끊긴 순간의 사본일 때 엉뚱하게 실패한다. */
 
+  test('순위 칸(많이 찾는 뉴스)은 한국어 기사뿐이다 — 다른 나라 주제가 섞여 오면 수집기가 뺀다', async ({ page }) => {
+    /* 2026-10-01 태국 주제(ตรวจหวย, Sanook.com)가 10위로 올라온 적이 있다 */
+    const bad = await page.evaluate(() => {
+      const d = window.NewsData;
+      const rankKeys = d.categories.filter(c => c.rank).map(c => c.key);
+      return d.articles.filter(a => rankKeys.indexOf(a.category) >= 0 && !/[가-힣]/.test(a.title))
+        .map(a => a.id + ' :: ' + a.title.slice(0, 30));
+    });
+    expect(bad).toEqual([]);
+  });
+
   test('순위 칸(많이 찾는 뉴스)은 번호가 1부터 빠짐없고, 주제·검색량이 붙어 있다', async ({ page }) => {
     const bad = await page.evaluate(() => {
       const d = window.NewsData;

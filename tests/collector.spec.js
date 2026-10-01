@@ -316,3 +316,31 @@ test('순위 칸은 칸에 담은 뒤 번호를 1부터 빠짐없이 다시 매�
   const out = fillCategories([p(1, 'https://e.com/1'), p(2, 'https://e.com/x'), p(3, 'https://e.com/x'), p(4, 'https://e.com/4')]).popular;
   expect(out.map(a => [a.rank, a.url])).toEqual([[1, 'https://e.com/1'], [2, 'https://e.com/x'], [3, 'https://e.com/4']]);
 });
+
+test('구글 트렌드: 한국어 기사가 없는 주제(다른 나라 주제가 섞여 온 것)는 빼고, 해외 매체 한국어판보다 국내 매체를 고른다', () => {
+  /* 2026-10-01 미국 서버에서 받은 한국 목록에 태국 주제 "ตรวจหวย"(복권 확인)·Sanook.com 이 섞여 10위로 올라왔고,
+     "일본 대 에콰도르"는 베트남 매체 한국어판(ko.laodong.vn)이 첫 기사라 다음·스포츠조선 대신 뽑혔다. */
+  const news = (title, url, source) => '<ht:news_item><ht:news_item_title>' + title + '</ht:news_item_title>' +
+    '<ht:news_item_url>' + url + '</ht:news_item_url><ht:news_item_source>' + source + '</ht:news_item_source></ht:news_item>';
+  const item = (topic, traffic, ...items) => '<item><title>' + topic + '</title><ht:approx_traffic>' + traffic +
+    '</ht:approx_traffic><pubDate>Thu, 1 Oct 2026 01:00:00 -0700</pubDate>' + items.join('') + '</item>';
+  const xml = '<rss><channel>' +
+    item('일본 대 에콰도르', '20000+',
+      news('일본 대 에콰도르 축구 예측', 'https://ko.laodong.vn/bong-da/abc', 'Laodong.vn'),
+      news('"에콰도르가 한국에 진 건 컨디션 탓"', 'https://v.daum.net/v/qko2', 'Daum'),
+      news('모레노호에 0-3 참패해 놓고', 'https://www.sportschosun.com/football/1', '스포츠조선')) +
+    item('ตรวจหวย', '1000+',
+      news('ยินดีกับคนดวงเศรษฐี ถูกรางวัลที่ 1', 'https://www.sanook.com/news/9908067/', 'Sanook.com')) +
+    item('BTS', '5000+',                                                  // 주제가 영어여도 기사가 한국어면 남긴다
+      news('BTS, 새 앨범 발표', 'https://www.example.kr/bts', '견본연예')) +
+    item('현무', '1000+',                                                  // 해외 주소뿐이면 그거라도 쓴다
+      news('현무 미사일 시연 영상', 'https://ko.example.vn/hyunmoo', '견본해외')) +
+    '</channel></rss>';
+  const out = parseItems(xml, { category: 'popular', source: '구글 트렌드', trends: true });
+
+  expect(out.map(a => a.keywords[0])).toEqual(['일본 대 에콰도르', 'BTS', '현무']);   // 태국 주제는 빠진다
+  expect(out.map(a => a.rank)).toEqual([1, 2, 3]);
+  expect(out[0].source).toBe('Daum');                                               // 베트남 매체 대신 국내 매체
+  expect(out[0].url).toBe('https://v.daum.net/v/qko2');
+  expect(out[2].source).toBe('견본해외');
+});
