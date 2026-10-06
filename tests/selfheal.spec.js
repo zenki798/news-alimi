@@ -164,25 +164,28 @@ test('검증에 실패하면 기존 파일을 바꾸지 않고 임시 파일도 
 
 /* ---------- 수집기 프로세스 통째로 (명령으로 실행) — 네트워크는 --require 로 바꿔 끼운다 ---------- */
 
-function runCli(dir, env) {
+/* 장애 주입은 테스트 안에서만 한다(운영 코드에 강제 장애 장치를 두지 않는다). crashOnReplace 이면 미리 싣는
+   스크립트가 fs.renameSync 를 망가뜨려, 수집을 마치고 기존 파일과 바꾸는 순간 프로세스가 예외로 죽게 한다. */
+function runCli(dir, env, { crashOnReplace = false } = {}) {
   const stub = path.join(dir, '..', path.basename(dir) + '-net.js');
   fs.writeFileSync(stub, 'global.fetch = async () => ({ ok: true, status: 200, text: async () => ' +
-    JSON.stringify(rss('CLI', 2)) + ' });\n', 'utf8');
+    JSON.stringify(rss('CLI', 2)) + ' });\n' +
+    (crashOnReplace ? "require('fs').renameSync = () => { throw new Error('시험용 장애: 교체 직전에 죽음'); };\n" : ''), 'utf8');
   const clean = Object.assign({}, process.env);
-  ['NEWS_PREVIOUS_URL', 'GITHUB_OUTPUT', 'NEWS_FAULT'].forEach(k => delete clean[k]);
+  ['NEWS_PREVIOUS_URL', 'GITHUB_OUTPUT'].forEach(k => delete clean[k]);
   return spawnSync(process.execPath, ['--require', stub, path.join(__dirname, '..', 'scripts', 'fetch-news.js')], {
     env: Object.assign(clean, FAST, { NEWS_OUT_DIR: dir, GITHUB_RUN_ID: '424242', GITHUB_RUN_ATTEMPT: '1' }, env),
     encoding: 'utf8', timeout: 30000,
   });
 }
 
-test('수집기 프로세스가 쓰기 직전에 죽어도(예외) 기존 데이터가 그대로이고 종료 코드는 1이다', () => {
+test('수집기 프로세스가 기존 파일과 바꾸는 순간 죽어도(예외) 기존 데이터가 그대로이고 임시 파일도 남지 않는다', () => {
   const dir = seedDir();
   const before = snapshot(dir);
-  const r = runCli(dir, { NEWS_FAULT: 'crash-before-write' });
+  const r = runCli(dir, {}, { crashOnReplace: true });
   expect(r.status, r.stderr).toBe(1);
   expect(r.stderr).toContain('시험용 장애');
-  expect(snapshot(dir)).toBe(before);
+  expect(snapshot(dir)).toBe(before);                                // news.js·status.json 그대로, .tmp- 없음
 });
 
 test('heartbeat: 수집이 끝나면 성공 시각·run id·출처 성공/실패 수·기사 수를 남기고, 새 뉴스가 없어도 갱신한다', () => {

@@ -766,8 +766,6 @@ async function loadPrevious(outDir) {
 async function run({ outDir = process.env.NEWS_OUT_DIR || path.join(__dirname, '..', 'data'), fetchText = download, log = m => console.log(m) } = {}) {
   const previous = await loadPrevious(outDir);
   const result = await collect({ fetchText, previous, log });
-  /* 시험용 장애 주입: 수집은 끝났지만 쓰기 전에 죽는 경우(tests/selfheal.spec.js) */
-  if (process.env.NEWS_FAULT === 'crash-before-write') throw new Error('시험용 장애: 쓰기 전에 죽음');
   const hb = writeOutputs(result, { outDir, runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT });
 
   /* Actions 에 실패한 피드 수를 알린다. 저장소 사본은 실패 없는 차례에만 하루 한 번 커밋한다(fetch-news.yml).
