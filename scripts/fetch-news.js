@@ -284,37 +284,47 @@ function truncate(s, max) {
 
 /* ---------- 수집 ---------- */
 
-/* 같은 주소를 여러 칸이 나눠 쓴다 (연합 경제 → 경제·부동산·속보, 연합 정치 → 정치·속보).
- * 한 번 실행에서 주소마다 한 번만 받는다. 언론사 서버에 같은 요청을 거듭 보내지 않는다. */
-const downloads = new Map();
-function fetchFeed(feed) {
-  if (!downloads.has(feed.url)) downloads.set(feed.url, download(feed.url));
-  return downloads.get(feed.url);
+/* 받기 — 요청마다 시간 제한(기본 15초)을 두고, 잠깐의 장애는 간격을 두 배씩 늘려 다시 받는다(지수 백오프).
+ * 다시 받는 것: 연결 끊김·시간 초과·5xx·408·425·429. 그 밖의 4xx 는 다시 받아도 같으므로 바로 실패로 둔다.
+ * 전자신문은 GitHub 서버에서 가끔 연결이 끊기고(2026-10-01, 6번 중 3번 "fetch failed"),
+ * 거래소 공시는 가끔 403 을 준다. 숫자는 환경변수로 줄일 수 있다(테스트용). */
+const timeoutMs = () => Number(process.env.NEWS_TIMEOUT_MS) || TIMEOUT_MS;
+const retryMs = () => Number(process.env.NEWS_RETRY_MS) || 2000;     // 첫 대기. 다음은 두 배(±25%)
+const attemptsMax = () => Number(process.env.NEWS_ATTEMPTS) || 3;    // 처음 한 번 + 다시 두 번
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function retryable(e) {
+  if (e && e.status) return e.status >= 500 || [408, 425, 429].indexOf(e.status) >= 0;
+  return true;   // 상태 코드가 없으면 연결 문제(끊김·DNS·시간 초과)다
 }
 
-/* 연결이 끊기거나 서버가 5xx 로 답하면 잠깐 쉬고 한 번 더 받는다. 전자신문은 GitHub 서버에서 가끔
- * 연결이 끊긴다(2026-10-01, 최근 6번 중 3번 "fetch failed"). 4xx 는 다시 받아도 같으므로 바로 실패로 둔다. */
-const retryMs = () => Number(process.env.NEWS_RETRY_MS) || 3000;   // 테스트는 짧게 줄여 쓴다
 async function download(url) {
-  try {
-    return await downloadOnce(url);
-  } catch (e) {
-    if (/^HTTP 4/.test(e.message)) throw e;
-    await new Promise(r => setTimeout(r, retryMs()));
-    return downloadOnce(url);
+  const max = attemptsMax();
+  let last;
+  for (let i = 1; i <= max; i++) {
+    try {
+      return await downloadOnce(url);
+    } catch (e) {
+      last = e;
+      last.attempts = i;
+      if (i === max || !retryable(e)) break;
+      await sleep(retryMs() * Math.pow(2, i - 1) * (0.75 + Math.random() * 0.5));
+    }
   }
+  throw last;
 }
 
 /** 실패 까닭. Node fetch 는 "fetch failed" 만 말하고 진짜 까닭(ECONNRESET 등)은 cause 에 넣는다 */
 function why(e) {
   if (!e) return '알 수 없음';
   const c = e.cause && (e.cause.code || e.cause.message);
-  return (e.message || String(e)) + (c ? ' (' + c + ')' : '');
+  return (e.message || String(e)) + (c ? ' (' + c + ')' : '') + (e.attempts > 1 ? ' — ' + e.attempts + '번 시도' : '');
 }
 
 async function downloadOnce(url) {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  const limit = timeoutMs();
+  const timer = setTimeout(() => ctrl.abort(), limit);
   try {
     const res = await fetch(url, {
       signal: ctrl.signal,
@@ -324,11 +334,30 @@ async function downloadOnce(url) {
         'Accept': 'application/rss+xml, application/xml, text/xml, */*',
       },
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) {
+      const e = new Error('HTTP ' + res.status);
+      e.status = res.status;
+      throw e;
+    }
     return await res.text();
+  } catch (e) {
+    if (e && e.name === 'AbortError') {
+      const t = new Error('시간 초과 (' + Math.round(limit / 1000) + '초)');
+      t.code = 'TIMEOUT';
+      throw t;
+    }
+    throw e;
   } finally {
     clearTimeout(timer);
   }
+}
+
+/** RSS·Atom 이 맞는가. 점검 화면·오류 페이지(HTML)를 200 으로 주는 서버가 있어, 그대로 읽으면 "0건"으로 보여
+ *  장애가 "새 뉴스 없음"처럼 숨는다. 모양이 아니면 그 출처의 실패로 센다. */
+function assertFeed(xml) {
+  if (/<(rss|feed|rdf:RDF)[\s>]/i.test(String(xml).slice(0, 4000))) return;
+  const head = String(xml).replace(/\s+/g, ' ').trim().slice(0, 60);
+  throw new Error('RSS 형식이 아님' + (head ? ' ("' + head + '")' : ' (빈 응답)'));
 }
 
 function parseItems(xml, feed) {
@@ -563,35 +592,41 @@ function fillCategories(list) {
   return byCat;
 }
 
-async function main() {
-  const results = await Promise.allSettled(FEEDS.map(async f => {
-    const xml = await fetchFeed(f);
-    const items = parseItems(xml, f);
-    const spare = items.filter(a => a.spare).length;
-    console.log('  ok   ' + f.category.padEnd(9) + f.source.padEnd(12) + (items.length - spare) + '건' +
-      (spare ? ' (+예비 ' + spare + ')' : '') + '  ' + f.url);
-    return items;
+/**
+ * 수집 — 피드를 모두 받아 기사 목록(payload)과 출처별 결과(report)를 만든다. 파일은 쓰지 않는다.
+ *
+ * - 출처(피드)마다 따로 받고 따로 실패한다. 한 곳이 죽어도(시간 초과·5xx·RSS 아님·읽다가 예외) 나머지로 계속한다.
+ * - 같은 주소를 여러 칸이 나눠 쓴다(연합 경제 → 경제·부동산·속보). 한 번 실행에서 주소마다 한 번만 받는다.
+ * - 한 칸의 출처가 모두 실패했으면 지난번 정상 데이터(previous)의 그 칸 기사를 그대로 둔다. 빈 칸 대신 조금 지난 기사가 낫다.
+ *   단 지난번 데이터가 6시간보다 오래됐으면 쓰지 않고, 속보는 하루 지난 것을 뺀다.
+ * - 기사를 하나도 못 받았으면 예외를 던진다 → 파일을 쓰지 않으므로 기존 데이터가 그대로 남는다.
+ *
+ * fetchText 는 테스트가 바꿔 끼운다(네트워크 없이 장애를 흉내 낸다).
+ */
+async function collect({ feeds = FEEDS, fetchText = download, previous = null, now = Date.now(), log = () => {} } = {}) {
+  const cache = new Map();
+  const get = url => { if (!cache.has(url)) cache.set(url, fetchText(url)); return cache.get(url); };
+
+  const sources = await Promise.all(feeds.map(async f => {
+    const s = { category: f.category, source: f.source, url: f.url };
+    try {
+      const xml = await get(f.url);
+      assertFeed(xml);
+      const items = parseItems(xml, f);
+      const spare = items.filter(a => a.spare).length;
+      log('  ok   ' + f.category.padEnd(9) + f.source.padEnd(12) + (items.length - spare) + '건' +
+        (spare ? ' (+예비 ' + spare + ')' : '') + '  ' + f.url);
+      return Object.assign(s, { ok: true, items });
+    } catch (e) {
+      log('  FAIL ' + f.category.padEnd(9) + f.source.padEnd(12) + why(e) + '  ' + f.url);
+      return Object.assign(s, { ok: false, reason: why(e), items: [] });
+    }
   }));
 
-  const collected = [];
-  let failed = 0;
-  results.forEach((r, i) => {
-    if (r.status === 'fulfilled') collected.push.apply(collected, r.value);
-    else {
-      failed++;
-      console.warn('  FAIL ' + FEEDS[i].category.padEnd(9) + FEEDS[i].source.padEnd(12) +
-        why(r.reason) + '  ' + FEEDS[i].url);
-    }
-  });
-
-  /* 피드 하나가 죽어도 나머지로 계속한다. 다만 전부 실패면 빈 파일을 쓰지 않는다. */
-  if (!collected.length) {
-    console.error('\n기사를 하나도 못 받았습니다. 기존 데이터를 유지하고 종료합니다.');
-    process.exit(1);
-  }
+  const collected = [].concat(...sources.map(s => s.items));
+  if (!collected.length) throw new Error('기사를 하나도 못 받았다 — 피드 ' + sources.length + '개 모두 실패. 기존 데이터를 그대로 둔다');
 
   const byCat = fillCategories(collected);
-
   assignImportance(byCat);
 
   const articles = [];
@@ -604,6 +639,19 @@ async function main() {
     });
   });
 
+  /* 출처가 모두 실패한 칸은 지난번 정상 데이터로 채운다 */
+  const carriedOver = [];
+  const prevFresh = previous && previous.generatedAt && now - Date.parse(previous.generatedAt) <= 6 * 3600000;
+  CATEGORIES.forEach(c => {
+    const mine = sources.filter(s => s.category === c.key);
+    if (!mine.length || mine.some(s => s.ok) || byCat[c.key].length || !prevFresh) return;
+    const old = (previous.articles || []).filter(a => a.category === c.key &&
+      (c.key !== 'breaking' || now - Date.parse(a.publishedAt) <= 24 * 3600000));
+    if (!old.length) return;
+    old.forEach(a => articles.push(Object.assign({}, a)));
+    carriedOver.push(c.key);
+  });
+
   /* id 충돌 방어 */
   const seen = new Set();
   articles.forEach((a, i) => {
@@ -613,15 +661,28 @@ async function main() {
 
   articles.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
 
-  const payload = {
-    isMock: false,
-    generatedAt: new Date().toISOString(),
-    categories: CATEGORIES,
-    articles,
+  const payload = { isMock: false, generatedAt: new Date(now).toISOString(), categories: CATEGORIES, articles };
+  const before = new Set(((previous && previous.articles) || []).map(a => a.id));
+  const failedSources = sources.filter(s => !s.ok);
+  return {
+    payload,
+    report: {
+      sources_total: sources.length,
+      sources_ok: sources.length - failedSources.length,
+      sources_failed: failedSources.length,
+      failed_sources: failedSources.map(s => ({ category: s.category, source: s.source, url: s.url, reason: s.reason })),
+      articles: articles.length,
+      /* 지난번에 없던 기사 수. 0 이어도 수집은 정상이다 — "새 뉴스 없음"과 "수집기 장애"를 가른다 */
+      new_articles: articles.filter(a => !before.has(a.id)).length,
+      carried_over: carriedOver,
+      per_category: CATEGORIES.map(c => c.name + ' ' + articles.filter(a => a.category === c.key).length).join(' / '),
+    },
   };
+}
 
-  const out =
-    '/* 자동 생성 파일 — 직접 수정하지 마세요.\n' +
+/** 화면이 싣는 data/news.js 글자. file:// 에서도 열리게 <script> 로 싣는 모양이다 */
+function renderNewsJs(payload) {
+  return '/* 자동 생성 파일 — 직접 수정하지 마세요.\n' +
     '   scripts/fetch-news.js 가 GitHub Actions 에서 생성합니다.\n' +
     '   제목·링크·짧은 발췌·출처만 담습니다. 기사 본문은 저장하지 않습니다. */\n' +
     '(function (g) {\n' +
@@ -632,23 +693,97 @@ async function main() {
     '  };\n' +
     '  g.NewsData = d;\n' +
     '})(window);\n';
+}
 
-  const dest = path.join(__dirname, '..', 'data', 'news.js');
-  fs.writeFileSync(dest, out, 'utf8');
+/** data/news.js 글자를 실행해 NewsData 를 꺼낸다 (브라우저처럼 window 를 넘긴다). 못 읽으면 null */
+function readNewsJs(text) {
+  try {
+    const fake = {};
+    new Function('window', text)(fake);
+    return fake.NewsData && Array.isArray(fake.NewsData.articles) ? fake.NewsData : null;
+  } catch (e) { return null; }
+}
+
+/** 바꿔 넣기 전에 결과가 멀쩡한지 본다. 하나라도 어긋나면 예외 → 기존 파일을 건드리지 않는다 */
+function validateOutput(payload, text) {
+  const keys = new Set(payload.categories.map(c => c.key));
+  const ids = new Set();
+  if (!payload.articles.length) throw new Error('검증 실패: 기사가 0건');
+  payload.articles.forEach(a => {
+    if (!a.id || ids.has(a.id)) throw new Error('검증 실패: id 가 없거나 겹침 (' + a.id + ')');
+    ids.add(a.id);
+    if (!keys.has(a.category)) throw new Error('검증 실패: 모르는 분야 ' + a.category);
+    if (!a.title || !/^https?:\/\//.test(a.url || '')) throw new Error('검증 실패: 제목·주소 없음 (' + a.id + ')');
+    if (isNaN(Date.parse(a.publishedAt))) throw new Error('검증 실패: 발행 시각 (' + a.id + ')');
+  });
+  const back = readNewsJs(text);
+  if (!back || back.articles.length !== payload.articles.length) throw new Error('검증 실패: 만든 파일을 다시 읽을 수 없음');
+}
+
+/** 임시 파일에 다 쓴 뒤 이름을 바꿔 한 번에 교체한다. 쓰다가 죽어도 기존 파일은 온전하다(같은 폴더 안 rename 은 원자적) */
+function writeAtomic(dest, text) {
+  const tmp = dest + '.tmp-' + process.pid;
+  try {
+    fs.writeFileSync(tmp, text, 'utf8');
+    fs.renameSync(tmp, dest);
+  } finally {
+    if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
+  }
+}
+
+/**
+ * 결과 쓰기: 검증 → 임시 파일 → 교체. news.js 를 바꾼 뒤에만 수집 성공 기록(status.json, heartbeat)을 쓴다.
+ * heartbeat 는 사이트에 함께 배포되고, 지킴이(scripts/watchdog.js)가 그것으로 "마지막 성공"을 본다.
+ */
+function writeOutputs({ payload, report }, { outDir, runId = '', runAttempt = '' }) {
+  const text = renderNewsJs(payload);
+  validateOutput(payload, text);
+  writeAtomic(path.join(outDir, 'news.js'), text);
+  const heartbeat = Object.assign({
+    last_success_at: payload.generatedAt,
+    run_id: runId || null,
+    run_attempt: runAttempt ? Number(runAttempt) : null,
+    /* 수집기가 본 상태. 지킴이는 여기에 "얼마나 오래됐나"를 더해 HEALTHY·DEGRADED·CRITICAL 을 판단한다 */
+    status: report.sources_failed ? 'DEGRADED' : 'HEALTHY',
+  }, report);
+  writeAtomic(path.join(outDir, 'status.json'), JSON.stringify(heartbeat, null, 2) + '\n');
+  return heartbeat;
+}
+
+/** 지난번 정상 데이터 — Actions 에서는 지금 사이트에 올라가 있는 것(NEWS_PREVIOUS_URL), 아니면 폴더의 파일 */
+async function loadPrevious(outDir) {
+  try {
+    if (process.env.NEWS_PREVIOUS_URL) {
+      const r = await fetch(process.env.NEWS_PREVIOUS_URL + (process.env.NEWS_PREVIOUS_URL.includes('?') ? '&' : '?') + 't=' + Date.now());
+      if (r.ok) return readNewsJs(await r.text());
+    }
+    const p = path.join(outDir, 'news.js');
+    return fs.existsSync(p) ? readNewsJs(fs.readFileSync(p, 'utf8')) : null;
+  } catch (e) { return null; }
+}
+
+/** 명령 진입점: 수집 → 검증 → 교체 → heartbeat. 실패하면 예외(종료 코드 1)이고 기존 파일은 그대로다 */
+async function run({ outDir = process.env.NEWS_OUT_DIR || path.join(__dirname, '..', 'data'), fetchText = download, log = m => console.log(m) } = {}) {
+  const previous = await loadPrevious(outDir);
+  const result = await collect({ fetchText, previous, log });
+  /* 시험용 장애 주입: 수집은 끝났지만 쓰기 전에 죽는 경우(tests/selfheal.spec.js) */
+  if (process.env.NEWS_FAULT === 'crash-before-write') throw new Error('시험용 장애: 쓰기 전에 죽음');
+  const hb = writeOutputs(result, { outDir, runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT });
 
   /* Actions 에 실패한 피드 수를 알린다. 저장소 사본은 실패 없는 차례에만 하루 한 번 커밋한다(fetch-news.yml).
    * 실패한 순간의 사본이 저장소에 남으면 그 칸이 비거나 한 출처만 남아 저장소의 테스트가 실패한다. */
-  if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, 'failed=' + failed + '\n');
+  if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, 'failed=' + hb.sources_failed + '\n');
 
-  const perCat = CATEGORIES.map(c => c.name + ' ' + byCat[c.key].length).join(' / ');
-  console.log('\n수집 완료: 총 ' + articles.length + '건 (피드 실패 ' + failed + '개)');
-  console.log('카테고리별: ' + perCat);
-  console.log('생성: ' + dest);
+  console.log('\n수집 완료: 총 ' + hb.articles + '건, 새 기사 ' + hb.new_articles + '건 (피드 ' + hb.sources_total + '개 중 실패 ' + hb.sources_failed + '개)' +
+    (hb.carried_over.length ? ' — 지난번 데이터로 채운 칸: ' + hb.carried_over.join(', ') : ''));
+  console.log('카테고리별: ' + hb.per_category);
+  console.log('생성: ' + path.join(outDir, 'news.js') + ', heartbeat ' + path.join(outDir, 'status.json') + ' (상태 ' + hb.status + ')');
+  return hb;
 }
 
-/* `node scripts/fetch-news.js` 로 실행할 때만 수집한다. 테스트가 require 해서 정리 함수만 쓸 수 있게 한다. */
+/* `node scripts/fetch-news.js` 로 실행할 때만 수집한다. 테스트가 require 해서 함수만 쓸 수 있게 한다. */
 if (require.main === module) {
-  main().catch(e => {
+  run().catch(e => {
     console.error('수집 실패:', e && e.stack ? e.stack : e);
     process.exit(1);
   });
@@ -656,6 +791,7 @@ if (require.main === module) {
 
 module.exports = {
   clean, decodeEntities, stripByline, scrubSummary, spaceSentences, articleNo, canonicalUrl, parseItems,
-  parseTrends, trafficLabel, fillCategories, dedupeWithin, makeId, why, download,
+  parseTrends, trafficLabel, fillCategories, dedupeWithin, makeId, why, download, retryable, assertFeed,
+  collect, renderNewsJs, readNewsJs, validateOutput, writeAtomic, writeOutputs, run,
   CATEGORIES, FEEDS, PER_CATEGORY, GLOBAL_ECON_WORDS, BREAKING_WORDS,
 };

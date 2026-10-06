@@ -269,7 +269,11 @@ test.describe('화면과 조작', () => {
 
     const card = page.locator('.card[data-id="' + id + '"]');
     await expect(card).toBeVisible();
-    await expect(card.locator('.pts li').first()).toContainText('공시');
-    await expect(card.locator('.pts li').nth(1)).toContainText('공시명');
+    /* 첫 줄은 쉬운 풀이, 둘째 줄은 원래 공시명. 풀이에 "공시"라는 낱말이 늘 있지는 않다
+       ("5% 이상 지분 신고"는 "…신고입니다"로 끝난다 — 2026-10-06 그런 데이터에서 이 검사가 엉뚱하게 실패했다) */
+    const first = (await card.locator('.pts li').first().textContent()).trim();
+    expect(first.length, '풀이가 비었다').toBeGreaterThan(10);
+    expect(first).not.toContain('공시명');
+    await expect(card.locator('.pts li').nth(1)).toContainText('공시명:');
   });
 });
