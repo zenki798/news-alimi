@@ -155,7 +155,9 @@ data/mock-news.js                  견본 데이터 (기본값, 실제 뉴스 �
 data/news.js                       수집 결과 사본(하루 한 번 커밋) — 자동 생성물, 직접 수정 금지
 manifest.webmanifest · sw.js       앱(PWA) 설치 정보 · 서비스 워커
 icons/                             앱 아이콘 (npm run make:icons 로 생성)
-scripts/fetch-news.js              RSS 수집기 (의존성 없음)
+scripts/fetch-news.js              RSS 수집기 (의존성 없음) — 검증 후 교체, heartbeat(data/status.json)
+scripts/watchdog.js                수집 지킴이 — 멈추면 되살린다 (.github/workflows/watchdog.yml)
+scripts/health.js                  지금 수집 상태 확인 (npm run health)
 .github/workflows/fetch-news.yml   약 5분마다 수집·배포 (7일 지난 실행 기록은 한 시간마다 자동 삭제)
 tests/                             Playwright 테스트
 ```
@@ -166,6 +168,18 @@ tests/                             Playwright 테스트
 `data/news.js`를 JSON이 아니라 **JS 파일**로 만든 이유는 `file://`에서 `fetch`가 CORS에 막히기
 때문입니다. `<script src>`는 막히지 않으므로 **파일을 더블클릭해서 열어도 똑같이 동작**합니다.
 수집 결과가 없으면 견본 데이터가 그대로 남습니다.
+
+## 멈춰도 스스로 되살아납니다
+
+GitHub 쪽 장애로 수집이 멈춰도(2026-10-05 약 7시간 멈춘 적이 있습니다) 사람이 들여다보지 않아도 되살아나게 만들었습니다.
+
+- 수집기는 피드 하나가 느리거나 죽어도 나머지로 계속하고, 잠깐의 장애는 간격을 늘려 다시 받습니다.
+- 수집에 성공할 때마다 사이트에 "마지막 성공 시각"(heartbeat, `data/status.json`)을 함께 올립니다.
+- 따로 도는 **수집 지킴이**가 약 10분마다 그 시각을 보고, 15분 넘게 멈췄으면 멈춘 실행을 취소하거나 다시 실행하거나 새로 부릅니다.
+  자동 복구는 1시간에 3번까지 하고, 넘으면 CRITICAL 로 남깁니다.
+- 지금 상태는 `npm run health` 로 봅니다(HEALTHY · DEGRADED · CRITICAL). 저장소 첫 화면의 최신 커밋 옆 표시로도 보입니다.
+
+완전히 멈추려면 Actions 탭에서 "뉴스 수집·배포"와 "수집 지킴이"를 둘 다 Disable 합니다.
 
 ## 직접 돌려보기
 

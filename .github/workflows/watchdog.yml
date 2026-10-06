@@ -1,0 +1,100 @@
+# 수집 지킴이 — 수집 사슬(fetch-news.yml)이 멈추면 사람 없이 찾아서 되살린다 (AGENTS.md 6항)
+#
+# 왜 따로 있나
+# - 2026-10-05 수집의 배포 작업이 GitHub 서버를 배정받지 못해 대기열에 7시간 멈췄다. "한 번에 하나만"(concurrency)
+#   규칙이라 뒤 차례·예비 예약도 그 뒤에 줄만 섰고, GitHub 는 대기열 작업을 24시간 뒤에야 취소한다.
+#   수집 워크플로 안에서는 자기 자신이 멈춘 것을 고칠 수 없다. 그래서 다른 워크플로·다른 concurrency 묶음으로 둔다.
+#
+# 무엇을 하나 (scripts/watchdog.js)
+# - 사이트의 heartbeat(data/status.json)가 15분 넘게 멈췄으면: 돌고 있는 차례가 움직이면 기다리고,
+#   20분 넘게 그대로면 취소하고 새로 부르고, 실패한 차례는 다시 실행하고, 차례가 없으면 새로 부른다.
+# - 자동 복구는 1시간에 3번까지. 넘으면 CRITICAL 로 남기고 멈춘다. 다음 성공에서 횟수는 저절로 0 이 된다.
+# - 상태(HEALTHY·DEGRADED·CRITICAL)는 main 최신 커밋의 상태 표시(news/health)로 남는다. `npm run health` 로도 본다.
+#
+# 언제 도나
+# - 수집처럼 "다음 차례 부르기"로 돈다. 환경 watchdog-interval 의 대기 타이머(10분)만큼 기다렸다 본다.
+#   GitHub 예약(schedule)은 몇 시간씩 건너뛰어(2026-10-05 12시간에 1번) 믿을 수 없다.
+# - 예약은 사슬이 끊겼을 때 다시 잇는 예비용이다. 수집의 예비 예약(7·37분)과 겹치지 않고 정시·5분 단위를 피한다.
+# - 수집 워크플로가 차례마다 이 사슬이 살아 있는지 보고, 끊겼으면 다시 부른다(서로 지켜본다).
+#
+# 멈추려면: Actions 탭에서 이 워크플로와 "뉴스 수집·배포"를 둘 다 Disable 한다.
+# (차례를 취소하는 것만으로는 멈추지 않는다 — 서로 되살린다)
+name: 수집 지킴이
+
+on:
+  workflow_dispatch:
+    inputs:
+      chain:
+        description: '앞 차례가 부른 실행인가 (직접 누를 때는 끈 채로 둔다)'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '3,23,43 * * * *'
+
+permissions:
+  actions: write      # 멈춘 수집 차례 취소·다시 실행·새로 부르기, 다음 지킴이 차례 부르기
+  statuses: write     # 상태(news/health)와 자동 복구 기록(news/recovery)
+  contents: read
+
+# 수집(news)과 다른 묶음이다. 수집 쪽에 멈춘 차례가 있어도 지킴이는 줄 서지 않는다.
+concurrency:
+  group: watchdog
+  cancel-in-progress: false
+
+jobs:
+  wait:
+    # 앞 차례가 부른 실행만 기다린다. 대기 시간은 환경 watchdog-interval 의 wait timer(10분)에 있다.
+    if: github.event_name == 'workflow_dispatch' && inputs.chain
+    runs-on: ubuntu-latest
+    environment: watchdog-interval
+    steps:
+      - name: 실제로 기다렸는지 확인
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          created=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq .created_at)
+          waited=$(( $(date +%s) - $(date -d "$created" +%s) ))
+          echo "기다린 시간: $((waited / 60))분 $((waited % 60))초"
+          # 타이머가 사라지면 기다리지 않고 끝없이 돈다. 5분 미만이면 사슬을 끊는다(수집 쪽이 다시 부른다).
+          if [ "$waited" -lt 300 ]; then
+            echo "::error::환경 watchdog-interval 에 대기 타이머가 없다. 사슬을 멈춘다 (AGENTS.md 6항)."
+            exit 1
+          fi
+
+  check:
+    needs: wait
+    if: ${{ !cancelled() && needs.wait.result != 'failure' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 수집 상태를 보고, 멈췄으면 되살린다
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SITE_URL: https://zenki798.github.io/news-alimi/
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node scripts/watchdog.js
+
+  next:
+    # 확인이 실패해도 다음 차례는 부른다. 사람이 취소하면 부르지 않는다.
+    needs: [wait, check]
+    if: ${{ !cancelled() && needs.wait.result != 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 다음 차례 부르기 (약 10분 뒤)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for i in 1 2 3; do
+            gh workflow run watchdog.yml --repo "${GITHUB_REPOSITORY}" --ref main -f chain=true && exit 0
+            sleep 15
+          done
+          echo "::error::다음 지킴이 차례를 부르지 못했다. 수집 워크플로나 예비 예약이 다시 잇는다."
+          exit 1

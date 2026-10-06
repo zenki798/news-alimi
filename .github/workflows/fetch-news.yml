@@ -19,7 +19,15 @@
 #   (5분마다 커밋하면 한 해 약 840MB, 하루 한 번이면 약 3MB)
 # - 5분마다 생기는 배포 산출물은 1일 뒤 자동 삭제되고, 실행 기록·배포 기록은 한 시간에 한 번 7일 지난 것을 지운다.
 #   하루 한 번 몰아서 지우면 약 1,500번을 한꺼번에 요청해 GitHub API 한도(시간당 1,000회)를 넘는다.
+#
+# 스스로 낫기 (2026-10-06, AGENTS.md 6항)
+# - 2026-10-05 배포 작업이 GitHub 서버를 배정받지 못해 대기열에 7시간 멈췄고, 사슬과 예비 예약이 모두 그 뒤에 섰다.
+# - 수집기는 성공할 때마다 data/status.json(heartbeat)을 사이트에 함께 올린다.
+# - 따로 도는 수집 지킴이(watchdog.yml)가 heartbeat 가 15분 넘게 멈추면 멈춘 차례를 취소하거나 다시 실행하거나
+#   새로 부른다(1시간에 3번까지). 지킴이가 부른 차례는 이름에 "(자동 복구)"가 붙는다.
+# - 이 워크플로는 차례마다 지킴이가 살아 있는지 보고, 끊겼으면 다시 부른다(서로 지켜본다).
 name: 뉴스 수집·배포
+run-name: ${{ github.event.inputs.reason == 'watchdog' && '뉴스 수집·배포 (자동 복구)' || '뉴스 수집·배포' }}
 
 on:
   push:
@@ -30,6 +38,10 @@ on:
         description: '앞 차례가 부른 실행인가 (직접 누를 때는 끈 채로 둔다)'
         type: boolean
         default: false
+      reason:
+        description: '누가 불렀나 (수집 지킴이는 watchdog)'
+        type: string
+        default: ''
   schedule:
     # 예비용 — 사슬이 끊겼을 때 다시 잇는다. 정시·5분 단위는 예약이 몰리는 시각이라 피한다.
     - cron: '7,37 * * * *'
@@ -73,6 +85,8 @@ jobs:
     # 기다리기를 건너뛴 실행(푸시·수동·예약)도 수집한다. 대기 확인이 실패했으면 하지 않는다.
     if: ${{ !cancelled() && needs.wait.result != 'failure' }}
     runs-on: ubuntu-latest
+    # 피드마다 시간 제한(15초×최대 3번)이 있어 수집은 1분 안쪽이다. 어딘가에서 걸려도 차례가 끝없이 붙들리지 않게 한다.
+    timeout-minutes: 10
     outputs:
       daily: ${{ steps.daily.outputs.daily }}
       hourly: ${{ steps.daily.outputs.hourly }}
@@ -89,6 +103,9 @@ jobs:
 
       - name: RSS 수집
         id: collect
+        # 출처가 모두 실패한 칸은 지금 사이트에 올라가 있는 지난 데이터로 채운다(6시간 안의 것만)
+        env:
+          NEWS_PREVIOUS_URL: https://zenki798.github.io/news-alimi/data/news.js
         run: node scripts/fetch-news.js
 
       - uses: actions/configure-pages@v5
@@ -99,6 +116,8 @@ jobs:
           cp index.html app.js manifest.webmanifest sw.js _site/
           cp icons/*.png _site/icons/
           cp data/mock-news.js data/news.js _site/data/
+          # 수집 성공 기록(heartbeat). 지킴이가 사이트에서 읽어 "마지막 성공"을 본다 — 배포까지 끝나야 갱신된다
+          cp data/status.json _site/data/
 
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -141,6 +160,9 @@ jobs:
     # wait 를 건너뛴 실행(푸시·수동·예약)에서는 배포까지 건너뛴다 (2026-09-30 첫 적용 때 겪음).
     if: ${{ !cancelled() && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
+    # 돌기 시작한 뒤 걸리면 끊는다. 서버를 배정받지 못해 대기열에서 멈춘 경우(2026-10-05)는 이것으로 못 끊어서
+    # 수집 지킴이(watchdog.yml)가 찾아 취소한다.
+    timeout-minutes: 15
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -163,8 +185,24 @@ jobs:
             gh workflow run fetch-news.yml --repo "${GITHUB_REPOSITORY}" --ref main -f chain=true && exit 0
             sleep 15
           done
-          echo "::error::다음 차례를 부르지 못했다. 예비 예약이나 다음 푸시 때 다시 이어진다."
+          echo "::error::다음 차례를 부르지 못했다. 수집 지킴이가 15분 안에 찾아 다시 잇는다."
           exit 1
+
+      - name: 수집 지킴이가 살아 있는지 확인 (끊겼으면 다시 부른다)
+        # 지킴이 사슬이 끊기면 이쪽이 되살리고, 이쪽 사슬이 끊기면 지킴이가 되살린다. 둘 다 끊기면 예비 예약이 잇는다.
+        # 지킴이 사슬은 다음 차례를 끝나기 전에 부르므로, 살아 있으면 끝나지 않은 차례가 늘 하나 이상 있다.
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/watchdog.yml/runs?per_page=10" \
+                --jq '[.workflow_runs[] | select(.status != "completed")] | length')
+          echo "끝나지 않은 지킴이 차례: ${n}개"
+          if [ "$n" = "0" ]; then
+            echo "::warning::수집 지킴이 사슬이 끊겨 있다. 다시 부른다."
+            gh workflow run watchdog.yml --repo "${GITHUB_REPOSITORY}" --ref main -f chain=false
+          fi
 
   cleanup:
     # 한 시간에 한 번 7일 지난 실행 기록과 배포 기록을 지운다. 한 번에 약 100번 요청한다
@@ -182,15 +220,18 @@ jobs:
       - name: 7일 지난 실행 기록 지우기
         run: |
           cutoff=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
-          ids=$(gh api -X GET --paginate "repos/$R/actions/workflows/fetch-news.yml/runs" \
-                  -f created="<$cutoff" -f per_page=100 --jq '.workflow_runs[].id')
-          echo "지울 실행 기록: $(printf '%s\n' $ids | grep -c . || true)건 ($cutoff 이전)"
-          for id in $ids; do gh api -X DELETE "repos/$R/actions/runs/$id" --silent || true; done
+          # 수집과 수집 지킴이(약 10분마다) 둘 다
+          for wf in fetch-news.yml watchdog.yml; do
+            ids=$(gh api -X GET --paginate "repos/$R/actions/workflows/$wf/runs" \
+                    -f created="<$cutoff" -f per_page=100 --jq '.workflow_runs[].id')
+            echo "$wf 지울 실행 기록: $(printf '%s\n' $ids | grep -c . || true)건 ($cutoff 이전)"
+            for id in $ids; do gh api -X DELETE "repos/$R/actions/runs/$id" --silent || true; done
+          done
 
       - name: 7일 지난 배포 기록 지우기
         run: |
           cutoff=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
-          for env in news-interval github-pages; do
+          for env in news-interval watchdog-interval github-pages; do
             ids=$(gh api --paginate "repos/$R/deployments?environment=$env&per_page=100" \
                     --jq ".[] | select(.created_at < \"$cutoff\") | .id")
             echo "$env: 지울 배포 기록 $(printf '%s\n' $ids | grep -c . || true)건"

@@ -139,10 +139,85 @@ test('5분마다 생기는 기록은 오래되면 지운다 — 배포 산출물
   expect(cleanup).toContain("date -u -d '7 days ago'");
   expect(cleanup).toContain('-f created="<$cutoff"');
   expect(cleanup).toContain('-X DELETE "repos/$R/actions/runs/$id"');
-  expect(cleanup).toContain('for env in news-interval github-pages; do');
+  // 2026-10-06 수집 지킴이의 환경(watchdog-interval)이 생겨 함께 지운다
+  expect(cleanup).toContain('for env in news-interval watchdog-interval github-pages; do');
   expect(cleanup).toContain('select(.created_at < \\"$cutoff\\")');
   // 배포 기록은 비활성으로 돌린 뒤에야 지울 수 있다
   expect(cleanup.indexOf('state=inactive')).toBeGreaterThan(-1);
   expect(cleanup.indexOf('state=inactive')).toBeLessThan(cleanup.indexOf('-X DELETE "repos/$R/deployments/$id"'));
   expect(yml).toMatch(/^ {2}deployments: write/m);
+});
+
+/* ---------- 스스로 낫기: 수집 지킴이 (2026-10-05 배포 작업이 대기열에 7시간 멈춘 장애 뒤) ---------- */
+const WD = 'watchdog.yml';
+
+test('수집 지킴이는 수집과 다른 워크플로·다른 concurrency 묶음이다 — 수집 쪽에 멈춘 차례가 있어도 줄 서지 않는다', async () => {
+  const yml = read(WD);
+  expect(yml).toMatch(/^concurrency:\n\s+group: watchdog\n\s+cancel-in-progress: false$/m);
+  expect(read(WF)).toMatch(/^concurrency:\n\s+group: news$/m);
+  expect(yml).not.toContain('actions/deploy-pages');
+});
+
+test('지킴이 예약은 수집 예약과 시각이 겹치지 않고, 정시·5분 단위를 피한다', async () => {
+  const minutesIn = name => [...read(name).matchAll(/-\s*cron:\s*'([^']+)'/g)].flatMap(m => {
+    const [min, hour, dom, mon, dow] = m[1].trim().split(/\s+/);
+    expect([hour, dom, mon, dow], name + ' 은 매시간 도는 예약').toEqual(['*', '*', '*', '*']);
+    return minutesOf(min);
+  });
+  const wd = minutesIn(WD);
+  const news = minutesIn(WF);
+  expect(wd.length).toBeGreaterThan(0);
+  expect(wd.filter(m => m % 5 === 0), '정시·5분 단위').toEqual([]);
+  expect(wd.filter(m => news.indexOf(m) >= 0), '수집 예약과 같은 분').toEqual([]);
+});
+
+test('지킴이도 "다음 차례 부르기"로 돈다 — 환경 watchdog-interval 의 대기 타이머, 5분 미만이면 사슬을 끊는다', async () => {
+  const jobs = jobsOf(read(WD));
+  expect(ifOf(jobs.wait)).toBe("github.event_name == 'workflow_dispatch' && inputs.chain");
+  expect(jobs.wait).toMatch(/^ {4}environment: watchdog-interval$/m);
+  expect(jobs.wait).toMatch(/if \[ "\$waited" -lt 300 \]; then[\s\S]*?exit 1/);
+  expect(ifOf(jobs.check)).toBe("${{ !cancelled() && needs.wait.result != 'failure' }}");
+  /* 확인이 실패해도 다음 차례는 부른다. 사람이 취소하면 부르지 않는다 */
+  expect(jobs.next).toMatch(/needs: \[wait, check\]/);
+  expect(ifOf(jobs.next)).toBe("${{ !cancelled() && needs.wait.result != 'failure' }}");
+  expect(jobs.next).toContain('gh workflow run watchdog.yml');
+  expect(jobs.next).toContain('-f chain=true');
+});
+
+test('지킴이는 scripts/watchdog.js 를 돌리고, 필요한 권한(actions·statuses 쓰기)만 가진다', async () => {
+  const yml = read(WD);
+  const check = jobsOf(yml).check;
+  expect(check).toContain('run: node scripts/watchdog.js');
+  expect(check).toContain('GITHUB_TOKEN: ${{ github.token }}');
+  expect(check).toContain('SITE_URL: https://zenki798.github.io/news-alimi/');
+  expect(check).toMatch(/^ {4}timeout-minutes: \d+$/m);
+  const perms = yml.split(/^permissions:\s*$/m)[1].split(/^\S/m)[0].trim().split('\n').map(l => l.trim().split(/[:\s]+/).slice(0, 2).join(':'));
+  expect(perms.sort()).toEqual(['actions:write', 'contents:read', 'statuses:write']);
+});
+
+test('수집은 heartbeat 를 함께 배포하고, 차례마다 지킴이가 살아 있는지 보고, 지킴이가 부른 차례는 "(자동 복구)"로 보인다', async () => {
+  const yml = read(WF);
+  const jobs = jobsOf(yml);
+  expect(jobs.build).toContain('cp data/status.json _site/data/');
+  expect(jobs.build).toContain('NEWS_PREVIOUS_URL: https://zenki798.github.io/news-alimi/data/news.js');
+  expect(yml).toMatch(/^run-name: \$\{\{ github\.event\.inputs\.reason == 'watchdog' && '뉴스 수집·배포 \(자동 복구\)'/m);
+  expect(yml).toMatch(/reason:\n\s+description: .+\n\s+type: string/);
+  /* 지킴이 사슬이 끊겼으면 다시 부른다. 사람이 취소한 차례에서는 하지 않는다 */
+  const step = jobs.next.slice(jobs.next.indexOf('- name: 수집 지킴이가 살아 있는지 확인'));
+  expect(step).toMatch(/if: \$\{\{ !cancelled\(\) \}\}/);
+  expect(step).toMatch(/continue-on-error: true/);
+  expect(step).toContain('actions/workflows/watchdog.yml/runs');
+  expect(step).toContain('gh workflow run watchdog.yml');
+});
+
+test('수집 작업은 돌다가 걸려도 끝없이 붙들리지 않게 실행 시간 제한이 있다', async () => {
+  const jobs = jobsOf(read(WF));
+  expect(jobs.build).toMatch(/^ {4}timeout-minutes: 10$/m);
+  expect(jobs.deploy).toMatch(/^ {4}timeout-minutes: 15$/m);
+});
+
+test('7일 지난 기록 정리에 지킴이의 실행 기록·배포 기록(watchdog-interval)도 들어 있다', async () => {
+  const cleanup = jobsOf(read(WF)).cleanup;
+  expect(cleanup).toContain('for wf in fetch-news.yml watchdog.yml; do');
+  expect(cleanup).toContain('for env in news-interval watchdog-interval github-pages; do');
 });
