@@ -95,10 +95,10 @@ test('잠깐의 장애는 간격을 두 배씩 늘려 다시 받고(지수 백�
       expect(await fn.download('https://flaky.example/rss')).toContain('<rss');
       const t = net.calls['https://flaky.example/rss'];
       expect(t).toHaveLength(3);
-      const gap1 = t[1] - t[0];
-      const gap2 = t[2] - t[1];
-      expect(gap1).toBeGreaterThanOrEqual(25);                       // 40ms ±25%
-      expect(gap2).toBeGreaterThan(gap1);                            // 두 번째는 두 배쯤
+      /* 대기는 40ms·80ms (±25%). PC 가 바쁘면 타이머가 늦게 울릴 수는 있어도 일찍 울리지는 않으므로
+         "적어도 이만큼은 기다렸다"로 본다 (두 간격을 서로 비교하면 바쁠 때 뒤집혀 실패한 적이 있다) */
+      expect(t[1] - t[0], '첫 대기').toBeGreaterThanOrEqual(28);       // 40 × 0.75 = 30
+      expect(t[2] - t[1], '둘째 대기는 두 배').toBeGreaterThanOrEqual(58); // 80 × 0.75 = 60
 
       await expect(fn.download('https://gone.example/rss')).rejects.toThrow('HTTP 404');
       expect(net.calls['https://gone.example/rss']).toHaveLength(1);
